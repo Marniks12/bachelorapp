@@ -1,0 +1,33 @@
+import cors from 'cors';
+import dotenv from 'dotenv';
+import express from 'express';
+
+import { connectDb } from './config/db';
+import { analysisRouter } from './routes/analysisRoutes';
+
+dotenv.config();
+
+const app = express();
+const port = process.env.PORT ?? 5000;
+
+app.use(cors());
+app.use(express.json());
+
+app.get('/health', (_req, res) => {
+  res.json({ status: 'ok', service: 'sonaris-backend' });
+});
+
+app.use('/api/analyses', analysisRouter);
+
+async function startServer() {
+  await connectDb();
+
+  app.listen(port, () => {
+    console.log(`Sonaris backend listening on port ${port}`);
+  });
+}
+
+startServer().catch((error) => {
+  console.error('Failed to start Sonaris backend:', error);
+  process.exit(1);
+});
