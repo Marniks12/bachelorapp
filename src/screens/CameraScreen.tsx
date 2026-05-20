@@ -1,12 +1,34 @@
+import { useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { createDemoAnalysis } from '../api/analysisApi';
 import { PhoneCard } from '../components/PhoneCard';
 import { RootStackParamList } from '../types/navigation';
 
 type CameraScreenProps = NativeStackScreenProps<RootStackParamList, 'Camera'>;
 
 export function CameraScreen({ navigation }: CameraScreenProps) {
+  const [isCreatingAnalysis, setIsCreatingAnalysis] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  async function handleTakePhoto() {
+    if (isCreatingAnalysis) {
+      return;
+    }
+
+    try {
+      setIsCreatingAnalysis(true);
+      setErrorMessage(null);
+      await createDemoAnalysis();
+      navigation.navigate('Result');
+    } catch {
+      setErrorMessage('Analyse kon niet aangemaakt worden.');
+    } finally {
+      setIsCreatingAnalysis(false);
+    }
+  }
+
   return (
     <PhoneCard contentStyle={styles.card}>
       <View style={styles.header}>
@@ -42,10 +64,13 @@ export function CameraScreen({ navigation }: CameraScreenProps) {
 
       <Pressable
         style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
-        onPress={() => navigation.navigate('Loading')}
+        onPress={handleTakePhoto}
+        disabled={isCreatingAnalysis}
       >
-        <Text style={styles.buttonText}>Neem foto</Text>
+        <Text style={styles.buttonText}>{isCreatingAnalysis ? 'Analyse...' : 'Neem foto'}</Text>
       </Pressable>
+
+      {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
     </PhoneCard>
   );
 }
@@ -162,6 +187,14 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '600',
     lineHeight: 30,
+    textAlign: 'center',
+  },
+  errorText: {
+    alignSelf: 'center',
+    marginTop: 12,
+    color: '#E60F30',
+    fontSize: 14,
+    lineHeight: 18,
     textAlign: 'center',
   },
 });

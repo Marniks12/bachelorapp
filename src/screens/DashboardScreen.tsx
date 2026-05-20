@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { Analysis, createDemoAnalysis, getAnalyses } from '../api/analysisApi';
+import { Analysis, getAnalyses } from '../api/analysisApi';
 import { RootStackParamList } from '../types/navigation';
 
 type DashboardScreenProps = NativeStackScreenProps<RootStackParamList, 'Dashboard'>;
@@ -14,6 +14,26 @@ type DashboardAnalysisCard = {
 };
 
 const MOCK_ANALYSIS_DATE = '24 februari 2026';
+const MOCK_ANALYSIS_CARDS: DashboardAnalysisCard[] = [
+  {
+    id: 'mock-latest',
+    patientLabel: 'Emma',
+    severity: 'Ernstige gehoorvlies',
+    createdAt: MOCK_ANALYSIS_DATE,
+  },
+  {
+    id: 'mock-earlier-one',
+    patientLabel: 'Emma',
+    severity: 'Matige gehoorverlies',
+    createdAt: MOCK_ANALYSIS_DATE,
+  },
+  {
+    id: 'mock-earlier-two',
+    patientLabel: 'Emma',
+    severity: 'Lichte gehoorverlies',
+    createdAt: MOCK_ANALYSIS_DATE,
+  },
+];
 
 function formatAnalysisDate(createdAt?: string): string {
   if (!createdAt) {
@@ -36,7 +56,6 @@ function formatAnalysisDate(createdAt?: string): string {
 export function DashboardScreen({ navigation }: DashboardScreenProps) {
   const [analyses, setAnalyses] = useState<Analysis[]>([]);
   const [isLoadingAnalyses, setIsLoadingAnalyses] = useState(true);
-  const [isCreatingAnalysis, setIsCreatingAnalysis] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const loadAnalyses = useCallback(async () => {
@@ -55,24 +74,11 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
 
   useEffect(() => {
     loadAnalyses();
-  }, [loadAnalyses]);
 
-  async function handleStartAnalysis() {
-    if (isCreatingAnalysis) {
-      return;
-    }
+    const unsubscribe = navigation.addListener('focus', loadAnalyses);
 
-    try {
-      setIsCreatingAnalysis(true);
-      setErrorMessage(null);
-      await createDemoAnalysis();
-      await loadAnalyses();
-    } catch {
-      setErrorMessage('Demo analyse kon niet aangemaakt worden.');
-    } finally {
-      setIsCreatingAnalysis(false);
-    }
-  }
+    return unsubscribe;
+  }, [loadAnalyses, navigation]);
 
   const analysisCards: DashboardAnalysisCard[] = analyses.slice(0, 3).map((analysis) => ({
     id: analysis._id,
@@ -80,9 +86,8 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
     severity: analysis.severity,
     createdAt: formatAnalysisDate(analysis.createdAt),
   }));
-  const statusMessage = isLoadingAnalyses
-    ? 'Analyses laden...'
-    : errorMessage ?? (analysisCards.length === 0 ? 'Geen analyses gevonden.' : null);
+  const visibleAnalysisCards = analysisCards.length > 0 ? analysisCards : MOCK_ANALYSIS_CARDS;
+  const statusMessage = isLoadingAnalyses ? 'Analyses laden...' : errorMessage;
 
   return (
     <ScrollView
@@ -94,7 +99,7 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
         <Text style={styles.greeting}>Hallo Emma</Text>
         <Text style={styles.subtitle}>Welkom terug bij Sonaris</Text>
 
-        <Pressable style={styles.scanCard} onPress={handleStartAnalysis} disabled={isCreatingAnalysis}>
+        <Pressable style={styles.scanCard} onPress={() => navigation.navigate('Camera')}>
           <Image source={require('../../assets/Rectangle.png')} style={styles.scanIcon} />
           <Text style={styles.scanTitle}>Nieuwe audiogram scannen</Text>
           <Text style={styles.scanDescription}>
@@ -114,7 +119,7 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
           </View>
         ) : null}
 
-        {analysisCards.map((analysis, index) => {
+        {!statusMessage && visibleAnalysisCards.map((analysis, index) => {
           if (index === 0) {
             return (
               <Pressable
@@ -153,14 +158,18 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
                 };
 
           return (
-            <View key={analysis.id} style={earlierStyles.card}>
+            <Pressable
+              key={analysis.id}
+              style={earlierStyles.card}
+              onPress={() => navigation.navigate('OldAnalysis')}
+            >
               <Image source={require('../../assets/image 17.png')} style={earlierStyles.thumb} />
               <Text style={earlierStyles.patientLabel}>{analysis.patientLabel}</Text>
               <Text style={earlierStyles.createdAt}>{analysis.createdAt}</Text>
               <View style={earlierStyles.pill} />
               <Text style={earlierStyles.severity}>{analysis.severity}</Text>
               <Text style={earlierStyles.arrow}>›</Text>
-            </View>
+            </Pressable>
           );
         })}
 
@@ -169,7 +178,7 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
           <Text style={styles.viewAll}>Bekijk alle</Text>
         </Pressable>
 
-        <Pressable style={styles.button} onPress={handleStartAnalysis} disabled={isCreatingAnalysis}>
+        <Pressable style={styles.button} onPress={() => navigation.navigate('Camera')}>
           <Text style={styles.buttonText}>Verdergaan</Text>
         </Pressable>
       </View>
