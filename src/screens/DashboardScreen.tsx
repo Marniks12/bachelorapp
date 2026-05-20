@@ -1,24 +1,19 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { Analysis, createAnalysis, getAnalyses } from '../api/analysisApi';
+import { Analysis, createDemoAnalysis, getAnalyses } from '../api/analysisApi';
 import { RootStackParamList } from '../types/navigation';
 
 type DashboardScreenProps = NativeStackScreenProps<RootStackParamList, 'Dashboard'>;
+type DashboardAnalysisCard = {
+  id: string;
+  patientLabel: string;
+  severity: string;
+  createdAt: string;
+};
 
 const MOCK_ANALYSIS_DATE = '24 februari 2026';
-const MOCK_ANALYSIS_SEVERITY = 'Ernstige gehoorvlies';
-const MOCK_EARLIER_ANALYSES = [
-  {
-    date: '24 februari 2026',
-    severity: 'Matige gehoorverlies',
-  },
-  {
-    date: '24 februari 2026',
-    severity: 'Lichte gehoorverlies',
-  },
-];
 
 function formatAnalysisDate(createdAt?: string): string {
   if (!createdAt) {
@@ -40,31 +35,27 @@ function formatAnalysisDate(createdAt?: string): string {
 
 export function DashboardScreen({ navigation }: DashboardScreenProps) {
   const [analyses, setAnalyses] = useState<Analysis[]>([]);
+  const [isLoadingAnalyses, setIsLoadingAnalyses] = useState(true);
   const [isCreatingAnalysis, setIsCreatingAnalysis] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const loadAnalyses = useCallback(async () => {
+    try {
+      setIsLoadingAnalyses(true);
+      setErrorMessage(null);
+      const analyses = await getAnalyses();
+      setAnalyses(analyses);
+    } catch {
+      setAnalyses([]);
+      setErrorMessage('Analyses konden niet geladen worden.');
+    } finally {
+      setIsLoadingAnalyses(false);
+    }
+  }, []);
 
   useEffect(() => {
-    let isMounted = true;
-
-    async function loadAnalyses() {
-      try {
-        const analyses = await getAnalyses();
-
-        if (isMounted) {
-          setAnalyses(analyses);
-        }
-      } catch {
-        if (isMounted) {
-          setAnalyses([]);
-        }
-      }
-    }
-
     loadAnalyses();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  }, [loadAnalyses]);
 
   async function handleStartAnalysis() {
     if (isCreatingAnalysis) {
@@ -73,24 +64,25 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
 
     try {
       setIsCreatingAnalysis(true);
-      await createAnalysis();
-      navigation.navigate('Home');
+      setErrorMessage(null);
+      await createDemoAnalysis();
+      await loadAnalyses();
+    } catch {
+      setErrorMessage('Demo analyse kon niet aangemaakt worden.');
     } finally {
       setIsCreatingAnalysis(false);
     }
   }
 
-  const latestAnalysis = analyses[0];
-  const earlierAnalyses = MOCK_EARLIER_ANALYSES.map((mockAnalysis, index) => {
-    const analysis = analyses[index + 1];
-
-    return {
-      date: analysis ? formatAnalysisDate(analysis.createdAt) : mockAnalysis.date,
-      severity: analysis?.severity ?? mockAnalysis.severity,
-    };
-  });
-  const latestAnalysisDate = formatAnalysisDate(latestAnalysis?.createdAt);
-  const latestAnalysisSeverity = latestAnalysis?.severity ?? MOCK_ANALYSIS_SEVERITY;
+  const analysisCards: DashboardAnalysisCard[] = analyses.slice(0, 3).map((analysis) => ({
+    id: analysis._id,
+    patientLabel: analysis.patientLabel,
+    severity: analysis.severity,
+    createdAt: formatAnalysisDate(analysis.createdAt),
+  }));
+  const statusMessage = isLoadingAnalyses
+    ? 'Analyses laden...'
+    : errorMessage ?? (analysisCards.length === 0 ? 'Geen analyses gevonden.' : null);
 
   return (
     <ScrollView
@@ -115,33 +107,67 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
 
         <Text style={styles.latestTitle}>Laaste  Analyse</Text>
 
-        <Pressable style={styles.latestCard} onPress={() => navigation.navigate('OldAnalysis')}>
-          <Image source={require('../../assets/image 17.png')} style={styles.latestThumb} />
-          <Text style={styles.latestDate}>{latestAnalysisDate}</Text>
-          <Text style={styles.latestSeverity}>{latestAnalysisSeverity}</Text>
-          <Text style={styles.cardArrow}>›</Text>
-        </Pressable>
+        {statusMessage ? (
+          <View style={styles.latestCard}>
+            <Image source={require('../../assets/image 17.png')} style={styles.latestThumb} />
+            <Text style={styles.latestDate}>{statusMessage}</Text>
+          </View>
+        ) : null}
+
+        {analysisCards.map((analysis, index) => {
+          if (index === 0) {
+            return (
+              <Pressable
+                key={analysis.id}
+                style={styles.latestCard}
+                onPress={() => navigation.navigate('OldAnalysis')}
+              >
+                <Image source={require('../../assets/image 17.png')} style={styles.latestThumb} />
+                <Text style={styles.latestDate}>{analysis.patientLabel}</Text>
+                <Text style={styles.latestSeverity}>{analysis.severity}</Text>
+                <Text style={styles.latestCreatedAt}>{analysis.createdAt}</Text>
+                <Text style={styles.cardArrow}>›</Text>
+              </Pressable>
+            );
+          }
+
+          const earlierStyles =
+            index === 1
+              ? {
+                  card: styles.earlierCardOne,
+                  thumb: styles.earlierThumbOne,
+                  patientLabel: styles.earlierDateOne,
+                  pill: styles.pillOne,
+                  severity: styles.pillTextOne,
+                  arrow: styles.earlierArrowOne,
+                  createdAt: styles.earlierCreatedAtOne,
+                }
+              : {
+                  card: styles.earlierCardTwo,
+                  thumb: styles.earlierThumbTwo,
+                  patientLabel: styles.earlierDateTwo,
+                  pill: styles.pillTwo,
+                  severity: styles.pillTextTwo,
+                  arrow: styles.earlierArrowTwo,
+                  createdAt: styles.earlierCreatedAtTwo,
+                };
+
+          return (
+            <View key={analysis.id} style={earlierStyles.card}>
+              <Image source={require('../../assets/image 17.png')} style={earlierStyles.thumb} />
+              <Text style={earlierStyles.patientLabel}>{analysis.patientLabel}</Text>
+              <Text style={earlierStyles.createdAt}>{analysis.createdAt}</Text>
+              <View style={earlierStyles.pill} />
+              <Text style={earlierStyles.severity}>{analysis.severity}</Text>
+              <Text style={earlierStyles.arrow}>›</Text>
+            </View>
+          );
+        })}
 
         <Text style={styles.earlierTitle}>Eerder analyses</Text>
         <Pressable onPress={() => navigation.navigate('AnalysisOverview')}>
           <Text style={styles.viewAll}>Bekijk alle</Text>
         </Pressable>
-
-        <View style={styles.earlierCardOne}>
-          <Image source={require('../../assets/image 17.png')} style={styles.earlierThumbOne} />
-          <Text style={styles.earlierDateOne}>{earlierAnalyses[0].date}</Text>
-          <View style={styles.pillOne} />
-          <Text style={styles.pillTextOne}>{earlierAnalyses[0].severity}</Text>
-          <Text style={styles.earlierArrowOne}>›</Text>
-        </View>
-
-        <View style={styles.earlierCardTwo}>
-          <Image source={require('../../assets/image 17.png')} style={styles.earlierThumbTwo} />
-          <Text style={styles.earlierDateTwo}>{earlierAnalyses[1].date}</Text>
-          <View style={styles.pillTwo} />
-          <Text style={styles.pillTextTwo}>{earlierAnalyses[1].severity}</Text>
-          <Text style={styles.earlierArrowTwo}>›</Text>
-        </View>
 
         <Pressable style={styles.button} onPress={handleStartAnalysis} disabled={isCreatingAnalysis}>
           <Text style={styles.buttonText}>Verdergaan</Text>
@@ -281,7 +307,7 @@ const styles = StyleSheet.create({
   },
   latestDate: {
     position: 'absolute',
-    top: 28,
+    top: 22,
     left: 129,
     color: '#000000',
     fontSize: 15,
@@ -289,7 +315,15 @@ const styles = StyleSheet.create({
   },
   latestSeverity: {
     position: 'absolute',
-    top: 59,
+    top: 50,
+    left: 129,
+    color: '#000000',
+    fontSize: 15,
+    lineHeight: 20,
+  },
+  latestCreatedAt: {
+    position: 'absolute',
+    top: 76,
     left: 129,
     color: '#000000',
     fontSize: 15,
@@ -357,7 +391,7 @@ const styles = StyleSheet.create({
   },
   earlierDateOne: {
     position: 'absolute',
-    top: 14,
+    top: 10,
     left: 129,
     color: '#000000',
     fontSize: 15,
@@ -365,15 +399,31 @@ const styles = StyleSheet.create({
   },
   earlierDateTwo: {
     position: 'absolute',
-    top: 14,
+    top: 10,
     left: 129,
     color: '#000000',
     fontSize: 15,
     lineHeight: 20,
   },
+  earlierCreatedAtOne: {
+    position: 'absolute',
+    top: 29,
+    left: 129,
+    color: '#000000',
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  earlierCreatedAtTwo: {
+    position: 'absolute',
+    top: 29,
+    left: 129,
+    color: '#000000',
+    fontSize: 12,
+    lineHeight: 16,
+  },
   pillOne: {
     position: 'absolute',
-    top: 40,
+    top: 50,
     left: 125,
     width: 138,
     height: 15,
@@ -382,7 +432,7 @@ const styles = StyleSheet.create({
   },
   pillTwo: {
     position: 'absolute',
-    top: 41,
+    top: 50,
     left: 129,
     width: 138,
     height: 15,
@@ -391,7 +441,7 @@ const styles = StyleSheet.create({
   },
   pillTextOne: {
     position: 'absolute',
-    top: 39,
+    top: 49,
     left: 144,
     color: '#D9D9D9',
     fontSize: 12,
@@ -399,7 +449,7 @@ const styles = StyleSheet.create({
   },
   pillTextTwo: {
     position: 'absolute',
-    top: 40,
+    top: 49,
     left: 148,
     color: '#D9D9D9',
     fontSize: 12,

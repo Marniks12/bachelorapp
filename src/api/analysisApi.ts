@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:5000';
+const ANALYSES_URL = 'http://localhost:5000/api/analyses';
 
 export type Analysis = {
   _id: string;
@@ -13,7 +13,7 @@ export type Analysis = {
 };
 
 export async function getAnalyses(): Promise<Analysis[]> {
-  const response = await fetch(`${API_BASE_URL}/api/analyses`);
+  const response = await fetch(ANALYSES_URL);
 
   if (!response.ok) {
     throw new Error('Analyses ophalen mislukt');
@@ -22,11 +22,11 @@ export async function getAnalyses(): Promise<Analysis[]> {
   return response.json();
 }
 
-export async function createAnalysis(): Promise<Analysis> {
-  const response = await fetch(`${API_BASE_URL}/api/analyses`, {
-    method: "POST",
+export async function createDemoAnalysis(): Promise<Analysis> {
+  const response = await fetch(ANALYSES_URL, {
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({
       patientLabel: 'Emma',
