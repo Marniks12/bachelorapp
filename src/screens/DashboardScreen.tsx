@@ -1,11 +1,97 @@
+import { useEffect, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { Analysis, createAnalysis, getAnalyses } from '../api/analysisApi';
 import { RootStackParamList } from '../types/navigation';
 
 type DashboardScreenProps = NativeStackScreenProps<RootStackParamList, 'Dashboard'>;
 
+const MOCK_ANALYSIS_DATE = '24 februari 2026';
+const MOCK_ANALYSIS_SEVERITY = 'Ernstige gehoorvlies';
+const MOCK_EARLIER_ANALYSES = [
+  {
+    date: '24 februari 2026',
+    severity: 'Matige gehoorverlies',
+  },
+  {
+    date: '24 februari 2026',
+    severity: 'Lichte gehoorverlies',
+  },
+];
+
+function formatAnalysisDate(createdAt?: string): string {
+  if (!createdAt) {
+    return MOCK_ANALYSIS_DATE;
+  }
+
+  const date = new Date(createdAt);
+
+  if (Number.isNaN(date.getTime())) {
+    return MOCK_ANALYSIS_DATE;
+  }
+
+  return new Intl.DateTimeFormat('nl-BE', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(date);
+}
+
 export function DashboardScreen({ navigation }: DashboardScreenProps) {
+  const [analyses, setAnalyses] = useState<Analysis[]>([]);
+  const [isCreatingAnalysis, setIsCreatingAnalysis] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadAnalyses() {
+      try {
+        const analyses = await getAnalyses();
+
+        if (isMounted) {
+          setAnalyses(analyses);
+        }
+      } catch {
+        if (isMounted) {
+          setAnalyses([]);
+        }
+      }
+    }
+
+    loadAnalyses();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  async function handleStartAnalysis() {
+    if (isCreatingAnalysis) {
+      return;
+    }
+
+    try {
+      setIsCreatingAnalysis(true);
+      await createAnalysis();
+      navigation.navigate('Home');
+    } finally {
+      setIsCreatingAnalysis(false);
+    }
+  }
+
+  const latestAnalysis = analyses[0];
+  const earlierAnalyses = MOCK_EARLIER_ANALYSES.map((mockAnalysis, index) => {
+    const analysis = analyses[index + 1];
+
+    return {
+      date: analysis ? formatAnalysisDate(analysis.createdAt) : mockAnalysis.date,
+      severity: analysis?.severity ?? mockAnalysis.severity,
+    };
+  });
+  const latestAnalysisDate = formatAnalysisDate(latestAnalysis?.createdAt);
+  const latestAnalysisSeverity = latestAnalysis?.severity ?? MOCK_ANALYSIS_SEVERITY;
+
   return (
     <ScrollView
       style={styles.container}
@@ -16,7 +102,7 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
         <Text style={styles.greeting}>Hallo Emma</Text>
         <Text style={styles.subtitle}>Welkom terug bij Sonaris</Text>
 
-        <Pressable style={styles.scanCard} onPress={() => navigation.navigate('Home')}>
+        <Pressable style={styles.scanCard} onPress={handleStartAnalysis} disabled={isCreatingAnalysis}>
           <Image source={require('../../assets/Rectangle.png')} style={styles.scanIcon} />
           <Text style={styles.scanTitle}>Nieuwe audiogram scannen</Text>
           <Text style={styles.scanDescription}>
@@ -31,8 +117,8 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
 
         <Pressable style={styles.latestCard} onPress={() => navigation.navigate('OldAnalysis')}>
           <Image source={require('../../assets/image 17.png')} style={styles.latestThumb} />
-          <Text style={styles.latestDate}>24 februari 2026</Text>
-          <Text style={styles.latestSeverity}>Ernstige gehoorvlies</Text>
+          <Text style={styles.latestDate}>{latestAnalysisDate}</Text>
+          <Text style={styles.latestSeverity}>{latestAnalysisSeverity}</Text>
           <Text style={styles.cardArrow}>›</Text>
         </Pressable>
 
@@ -43,21 +129,21 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
 
         <View style={styles.earlierCardOne}>
           <Image source={require('../../assets/image 17.png')} style={styles.earlierThumbOne} />
-          <Text style={styles.earlierDateOne}>24 februari 2026</Text>
+          <Text style={styles.earlierDateOne}>{earlierAnalyses[0].date}</Text>
           <View style={styles.pillOne} />
-          <Text style={styles.pillTextOne}>Matige gehoorverlies</Text>
+          <Text style={styles.pillTextOne}>{earlierAnalyses[0].severity}</Text>
           <Text style={styles.earlierArrowOne}>›</Text>
         </View>
 
         <View style={styles.earlierCardTwo}>
           <Image source={require('../../assets/image 17.png')} style={styles.earlierThumbTwo} />
-          <Text style={styles.earlierDateTwo}>24 februari 2026</Text>
+          <Text style={styles.earlierDateTwo}>{earlierAnalyses[1].date}</Text>
           <View style={styles.pillTwo} />
-          <Text style={styles.pillTextTwo}>Lichte gehoorverlies</Text>
+          <Text style={styles.pillTextTwo}>{earlierAnalyses[1].severity}</Text>
           <Text style={styles.earlierArrowTwo}>›</Text>
         </View>
 
-        <Pressable style={styles.button} onPress={() => navigation.navigate('Home')}>
+        <Pressable style={styles.button} onPress={handleStartAnalysis} disabled={isCreatingAnalysis}>
           <Text style={styles.buttonText}>Verdergaan</Text>
         </Pressable>
       </View>
