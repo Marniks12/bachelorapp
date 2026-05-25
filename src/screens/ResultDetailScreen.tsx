@@ -36,7 +36,7 @@ export function ResultDetailScreen({ navigation }: ResultDetailScreenProps) {
 
           <Pressable
             style={({ pressed }) => [styles.chevronButton, pressed && styles.pressed]}
-            onPress={() => navigation.navigate('Result')}
+            onPress={() => navigation.goBack()}
           >
             <Image source={require('../../assets/chevron_up.png')} style={styles.chevronIcon} />
           </Pressable>

@@ -10,7 +10,14 @@ type LoadingScreenProps = NativeStackScreenProps<RootStackParamList, 'Loading'>;
 export function LoadingScreen({ navigation }: LoadingScreenProps) {
   useEffect(() => {
     const timer = setTimeout(() => {
-      navigation.replace('Result');
+      navigation.replace('Result', {
+        analysisId: 'demo-loading-result',
+        severity: 'Ernstige hoorverlies',
+        pta: 67,
+        recommendation:
+          'Verdere evaluatie door audioloog of NKO-arts aanbevolen.',
+        disclaimer: 'Deze analyse is een demo en geen medische diagnose.',
+      });
     }, 3000);
 
     return () => clearTimeout(timer);

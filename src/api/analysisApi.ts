@@ -4,8 +4,10 @@ export type Analysis = {
   _id: string;
   patientLabel: string;
   imageName: string;
+  success: boolean;
   severity: string;
   pta: number;
+  summary: string;
   recommendation: string;
   disclaimer: string;
   createdAt: string;

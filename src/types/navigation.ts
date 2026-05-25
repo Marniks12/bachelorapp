@@ -6,7 +6,13 @@ export type RootStackParamList = {
   InfoCarousel: undefined;
   Camera: undefined;
   Loading: undefined;
-  Result: undefined;
+  Result: {
+    analysisId: string;
+    severity: string;
+    pta: number;
+    recommendation: string;
+    disclaimer: string;
+  };
   ResultDetail: undefined;
   OldAnalysis: undefined;
   AnalysisOverview: undefined;

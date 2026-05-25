@@ -6,7 +6,9 @@ import { RootStackParamList } from '../types/navigation';
 
 type ResultScreenProps = NativeStackScreenProps<RootStackParamList, 'Result'>;
 
-export function ResultScreen({ navigation }: ResultScreenProps) {
+export function ResultScreen({ navigation, route }: ResultScreenProps) {
+  const { severity, pta, recommendation, disclaimer } = route.params;
+
   return (
     <PhoneCard contentStyle={styles.card}>
       <View style={styles.header}>
@@ -18,16 +20,15 @@ export function ResultScreen({ navigation }: ResultScreenProps) {
         </Pressable>
       </View>
 
-      <Text style={styles.title}>Ernstige hoorverlies</Text>
+      <Text style={styles.title}>{severity}</Text>
 
       <Image source={require('../../assets/image 17.png')} style={styles.chart} />
 
       <View style={styles.resultCopy}>
-        <Text style={styles.subtitle}>Ernstige hoorverlies</Text>
-        <Text style={styles.description}>
-          Binnen verschillende richtlijnen worden voor dit profiel aanvullende klinische
-          parameters meegenomen bij de evaluatie.
-        </Text>
+        <Text style={styles.subtitle}>{severity}</Text>
+        <Text style={styles.ptaText}>PTA: {pta}</Text>
+        <Text style={styles.description}>{recommendation}</Text>
+        <Text style={styles.disclaimer}>{disclaimer}</Text>
 
         <Pressable
           style={({ pressed }) => [styles.readMoreButton, pressed && styles.pressed]}
@@ -106,12 +107,31 @@ const styles = StyleSheet.create({
   },
   description: {
     maxWidth: 280,
-    marginBottom: 18,
+    marginBottom: 12,
     color: '#000000',
     fontFamily: 'Barlow Condensed',
     fontSize: 20,
     fontWeight: '300',
     lineHeight: 26,
+    textAlign: 'left',
+  },
+  ptaText: {
+    marginBottom: 10,
+    color: '#000000',
+    fontFamily: 'Barlow Condensed',
+    fontSize: 20,
+    fontWeight: '500',
+    lineHeight: 26,
+    textAlign: 'left',
+  },
+  disclaimer: {
+    maxWidth: 280,
+    marginBottom: 18,
+    color: 'rgba(0,0,0,0.68)',
+    fontFamily: 'Barlow Condensed',
+    fontSize: 16,
+    fontWeight: '300',
+    lineHeight: 22,
     textAlign: 'left',
   },
   readMoreButton: {

@@ -20,8 +20,14 @@ export function CameraScreen({ navigation }: CameraScreenProps) {
     try {
       setIsCreatingAnalysis(true);
       setErrorMessage(null);
-      await createDemoAnalysis();
-      navigation.navigate('Result');
+      const analysis = await createDemoAnalysis();
+      navigation.navigate('Result', {
+        analysisId: analysis._id,
+        severity: analysis.severity,
+        pta: analysis.pta,
+        recommendation: analysis.recommendation,
+        disclaimer: analysis.disclaimer,
+      });
     } catch {
       setErrorMessage('Analyse kon niet aangemaakt worden.');
     } finally {
@@ -67,7 +73,7 @@ export function CameraScreen({ navigation }: CameraScreenProps) {
         onPress={handleTakePhoto}
         disabled={isCreatingAnalysis}
       >
-        <Text style={styles.buttonText}>{isCreatingAnalysis ? 'Analyse...' : 'Neem foto'}</Text>
+        <Text style={styles.buttonText}>{isCreatingAnalysis ? 'Analyse bezig...' : 'Neem foto'}</Text>
       </Pressable>
 
       {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
