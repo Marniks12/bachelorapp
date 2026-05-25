@@ -3,8 +3,12 @@ import { Schema, model } from 'mongoose';
 export type AnalysisDocument = {
   patientLabel: string;
   imageName: string;
+  imageUrl?: string;
+  success: boolean;
   severity: string;
   pta: number;
+  confidence: string;
+  summary: string;
   recommendation: string;
   disclaimer: string;
   createdAt: Date;
@@ -23,12 +27,28 @@ const analysisSchema = new Schema<AnalysisDocument>(
       required: true,
       trim: true,
     },
+    imageUrl: {
+      type: String,
+      trim: true,
+    },
+    success: {
+      type: Boolean,
+      required: true,
+    },
     severity: {
       type: String,
       required: true,
     },
     pta: {
       type: Number,
+      required: true,
+    },
+    confidence: {
+      type: String,
+      required: true,
+    },
+    summary: {
+      type: String,
       required: true,
     },
     recommendation: {
