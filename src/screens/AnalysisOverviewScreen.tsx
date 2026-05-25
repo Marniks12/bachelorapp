@@ -1,51 +1,54 @@
+import { useCallback, useEffect, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { Analysis, getAnalyses } from '../api/analysisApi';
 import { RootStackParamList } from '../types/navigation';
 
 type AnalysisOverviewScreenProps = NativeStackScreenProps<RootStackParamList, 'AnalysisOverview'>;
 
-type AnalysisCard = {
-  date: string;
-  severity: string;
-  top: number;
-  pillTop: number;
-};
+function formatAnalysisDate(createdAt?: string): string {
+  if (!createdAt) {
+    return 'Onbekende datum';
+  }
 
-const analyses: AnalysisCard[] = [
-  {
-    date: '22 februari 2026',
-    severity: 'Matige gehoorverlies',
-    top: 160,
-    pillTop: 200,
-  },
-  {
-    date: '14 januari 2026',
-    severity: 'Matige gehoorverlies',
-    top: 269,
-    pillTop: 309,
-  },
-  {
-    date: '14 februari 2026',
-    severity: 'Lichte gehoorverlies',
-    top: 378,
-    pillTop: 419,
-  },
-  {
-    date: '24 februari 2026',
-    severity: 'Matige gehoorverlies',
-    top: 495,
-    pillTop: 535,
-  },
-  {
-    date: '24 maart 2026',
-    severity: 'Matige gehoorverlies',
-    top: 604,
-    pillTop: 644,
-  },
-];
+  const date = new Date(createdAt);
+
+  if (Number.isNaN(date.getTime())) {
+    return 'Onbekende datum';
+  }
+
+  return new Intl.DateTimeFormat('nl-BE', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(date);
+}
 
 export function AnalysisOverviewScreen({ navigation }: AnalysisOverviewScreenProps) {
+  const [analyses, setAnalyses] = useState<Analysis[]>([]);
+  const [statusMessage, setStatusMessage] = useState('Analyses laden...');
+
+  const loadAnalyses = useCallback(async () => {
+    try {
+      setStatusMessage('Analyses laden...');
+      const analyses = await getAnalyses();
+      setAnalyses(analyses);
+      setStatusMessage(analyses.length === 0 ? 'Nog geen analyses beschikbaar.' : '');
+    } catch {
+      setAnalyses([]);
+      setStatusMessage('Analyses konden niet geladen worden.');
+    }
+  }, []);
+
+  useEffect(() => {
+    loadAnalyses();
+
+    const unsubscribe = navigation.addListener('focus', loadAnalyses);
+
+    return unsubscribe;
+  }, [loadAnalyses, navigation]);
+
   return (
     <ScrollView
       style={styles.container}
@@ -59,16 +62,18 @@ export function AnalysisOverviewScreen({ navigation }: AnalysisOverviewScreenPro
 
         <Text style={styles.title}>AL jou analyses</Text>
 
-        {analyses.map((analysis) => (
+        {statusMessage ? <Text style={styles.statusText}>{statusMessage}</Text> : null}
+
+        {analyses.map((analysis, index) => (
           <Pressable
-            key={`${analysis.date}-${analysis.top}`}
-            style={[styles.card, { top: analysis.top }]}
-            onPress={() => navigation.navigate('OldAnalysis')}
+            key={analysis._id}
+            style={[styles.card, { top: 160 + index * 109 }]}
+            onPress={() => navigation.navigate('AnalysisDetails', { analysis })}
           >
-            <Image source={require('../../assets/image 17.png')} style={styles.thumbnail} />
-            <Text style={styles.date}>{analysis.date}</Text>
-            <View style={[styles.pill, { top: analysis.pillTop - analysis.top }]} />
-            <Text style={[styles.pillText, { top: analysis.pillTop - analysis.top - 1 }]}>
+            <Image source={{ uri: analysis.imageUrl }} style={styles.thumbnail} />
+            <Text style={styles.date}>{formatAnalysisDate(analysis.createdAt)}</Text>
+            <View style={styles.pill} />
+            <Text style={styles.pillText}>
               {analysis.severity}
             </Text>
             <Text style={styles.arrow}>&gt;</Text>
@@ -134,6 +139,16 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     lineHeight: 20,
   },
+  statusText: {
+    position: 'absolute',
+    left: 23,
+    right: 23,
+    top: 160,
+    color: '#000000',
+    fontSize: 15,
+    lineHeight: 20,
+    textAlign: 'center',
+  },
   card: {
     position: 'absolute',
     left: 23,
@@ -162,6 +177,7 @@ const styles = StyleSheet.create({
   pill: {
     position: 'absolute',
     left: 125,
+    top: 40,
     width: 138,
     height: 15,
     backgroundColor: '#F62222',
@@ -170,6 +186,7 @@ const styles = StyleSheet.create({
   pillText: {
     position: 'absolute',
     left: 144,
+    top: 39,
     color: '#ffffff',
     fontSize: 12,
     lineHeight: 16,

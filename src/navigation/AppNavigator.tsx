@@ -27,6 +27,7 @@ export function AppNavigator() {
       <Stack.Screen name="Camera" component={CameraScreen} />
       <Stack.Screen name="Loading" component={LoadingScreen} />
       <Stack.Screen name="Result" component={ResultScreen} />
+      <Stack.Screen name="AnalysisDetails" component={ResultDetailScreen} />
       <Stack.Screen name="ResultDetail" component={ResultDetailScreen} />
       <Stack.Screen name="OldAnalysis" component={OldAnalysisScreen} />
       <Stack.Screen name="AnalysisOverview" component={AnalysisOverviewScreen} />

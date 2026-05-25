@@ -6,8 +6,27 @@ import { RootStackParamList } from '../types/navigation';
 
 type ResultScreenProps = NativeStackScreenProps<RootStackParamList, 'Result'>;
 
+function getSeverityColor(severity: string, success: boolean) {
+  if (!success) {
+    return '#64748B';
+  }
+
+  const normalizedSeverity = severity.toLowerCase();
+
+  if (normalizedSeverity.includes('ernstig')) {
+    return '#DC2626';
+  }
+
+  if (normalizedSeverity.includes('matig')) {
+    return '#F59E0B';
+  }
+
+  return '#16A34A';
+}
+
 export function ResultScreen({ navigation, route }: ResultScreenProps) {
-  const { severity, pta, recommendation, disclaimer } = route.params;
+  const { analysis } = route.params;
+  const severityColor = getSeverityColor(analysis.severity, analysis.success);
 
   return (
     <PhoneCard contentStyle={styles.card}>
@@ -20,29 +39,32 @@ export function ResultScreen({ navigation, route }: ResultScreenProps) {
         </Pressable>
       </View>
 
-      <Text style={styles.title}>{severity}</Text>
+      <Text style={styles.title}>Resultaat analyse</Text>
 
-      <Image source={require('../../assets/image 17.png')} style={styles.chart} />
+      <Image source={{ uri: analysis.imageUrl }} style={styles.chart} />
 
       <View style={styles.resultCopy}>
-        <Text style={styles.subtitle}>{severity}</Text>
-        <Text style={styles.ptaText}>PTA: {pta}</Text>
-        <Text style={styles.description}>{recommendation}</Text>
-        <Text style={styles.disclaimer}>{disclaimer}</Text>
+        <View style={[styles.badge, { backgroundColor: severityColor }]}>
+          <Text style={styles.badgeText}>{analysis.severity}</Text>
+        </View>
+        <Text style={styles.ptaText}>PTA: {analysis.pta} dB</Text>
+        <Text style={styles.confidenceText}>Betrouwbaarheid: {analysis.confidence}</Text>
+        <Text style={styles.description}>{analysis.summary}</Text>
+        <Text style={styles.disclaimer}>{analysis.disclaimer}</Text>
 
         <Pressable
           style={({ pressed }) => [styles.readMoreButton, pressed && styles.pressed]}
-          onPress={() => navigation.navigate('ResultDetail')}
+          onPress={() => navigation.navigate('AnalysisDetails', { analysis })}
         >
-          <Text style={styles.readMoreText}>Read More</Text>
+          <Text style={styles.readMoreText}>Lees meer</Text>
         </Pressable>
       </View>
 
       <Pressable
         style={({ pressed }) => [styles.downloadButton, pressed && styles.buttonPressed]}
-        onPress={() => navigation.navigate('DashboardNewUser')}
+        onPress={() => navigation.navigate('Dashboard')}
       >
-        <Text style={styles.downloadText}>Download PDF</Text>
+        <Text style={styles.downloadText}>Naar dashboard</Text>
       </Pressable>
     </PhoneCard>
   );
@@ -90,19 +112,37 @@ const styles = StyleSheet.create({
     marginTop: 28,
     marginBottom: 24,
     resizeMode: 'contain',
+    backgroundColor: '#F8FAFC',
+    borderColor: '#E2E8F0',
+    borderRadius: 18,
+    borderWidth: 1,
   },
   resultCopy: {
     width: '100%',
     alignItems: 'flex-start',
     marginBottom: 30,
   },
-  subtitle: {
-    marginBottom: 10,
-    color: '#000000',
-    fontFamily: 'Anek Tamil',
-    fontSize: 20,
+  badge: {
+    minHeight: 34,
+    justifyContent: 'center',
+    marginBottom: 12,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+  },
+  badgeText: {
+    color: '#ffffff',
+    fontFamily: 'Open Sans',
+    fontSize: 14,
     fontWeight: '700',
-    lineHeight: 27,
+    lineHeight: 18,
+  },
+  confidenceText: {
+    marginBottom: 10,
+    color: '#475569',
+    fontFamily: 'Barlow Condensed',
+    fontSize: 18,
+    fontWeight: '500',
+    lineHeight: 24,
     textAlign: 'left',
   },
   description: {

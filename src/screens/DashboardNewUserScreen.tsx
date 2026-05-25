@@ -1,11 +1,36 @@
+import { useCallback, useEffect, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { Analysis, getAnalyses } from '../api/analysisApi';
 import { RootStackParamList } from '../types/navigation';
 
 type DashboardNewUserScreenProps = NativeStackScreenProps<RootStackParamList, 'DashboardNewUser'>;
 
 export function DashboardNewUserScreen({ navigation }: DashboardNewUserScreenProps) {
+  const [latestAnalysis, setLatestAnalysis] = useState<Analysis | null>(null);
+  const [statusMessage, setStatusMessage] = useState('Analyses laden...');
+
+  const loadLatestAnalysis = useCallback(async () => {
+    try {
+      setStatusMessage('Analyses laden...');
+      const analyses = await getAnalyses();
+      setLatestAnalysis(analyses[0] ?? null);
+      setStatusMessage(analyses.length === 0 ? 'Nog geen analyses beschikbaar.' : '');
+    } catch {
+      setLatestAnalysis(null);
+      setStatusMessage('Analyses konden niet geladen worden.');
+    }
+  }, []);
+
+  useEffect(() => {
+    loadLatestAnalysis();
+
+    const unsubscribe = navigation.addListener('focus', loadLatestAnalysis);
+
+    return unsubscribe;
+  }, [loadLatestAnalysis, navigation]);
+
   return (
     <ScrollView
       style={styles.container}
@@ -16,7 +41,7 @@ export function DashboardNewUserScreen({ navigation }: DashboardNewUserScreenPro
         <Text style={styles.greeting}>Hallo Emma</Text>
         <Text style={styles.subtitle}>Welkom Sonaris dashboard</Text>
 
-        <Pressable style={styles.scanCard} onPress={() => navigation.navigate('Home')}>
+        <Pressable style={styles.scanCard} onPress={() => navigation.navigate('Camera')}>
           <Image source={require('../../assets/Rectangle.png')} style={styles.scanIcon} />
           <Text style={styles.scanTitle}>Nieuwe audiogram scannen</Text>
           <Text style={styles.scanDescription}>
@@ -27,16 +52,25 @@ export function DashboardNewUserScreen({ navigation }: DashboardNewUserScreenPro
           </View>
         </Pressable>
 
-        <Text style={styles.firstAnalysisTitle}>Jou eerste analyse</Text>
+        <Text style={styles.firstAnalysisTitle}>Jouw laatste analyse</Text>
 
-        <Pressable style={styles.firstAnalysisCard} onPress={() => navigation.navigate('OldAnalysis')}>
-          <Image source={require('../../assets/image 17.png')} style={styles.firstAnalysisThumb} />
-          <Text style={styles.firstAnalysisDate}>24 februari 2026</Text>
-          <Text style={styles.firstAnalysisSeverity}>Ernstige gehoorvlies</Text>
-          <Text style={styles.cardArrow}>&gt;</Text>
-        </Pressable>
+        {latestAnalysis ? (
+          <Pressable
+            style={styles.firstAnalysisCard}
+            onPress={() => navigation.navigate('AnalysisDetails', { analysis: latestAnalysis })}
+          >
+            <Image source={{ uri: latestAnalysis.imageUrl }} style={styles.firstAnalysisThumb} />
+            <Text style={styles.firstAnalysisDate}>{latestAnalysis.patientLabel}</Text>
+            <Text style={styles.firstAnalysisSeverity}>{latestAnalysis.severity}</Text>
+            <Text style={styles.cardArrow}>&gt;</Text>
+          </Pressable>
+        ) : (
+          <View style={styles.firstAnalysisCard}>
+            <Text style={styles.emptyText}>{statusMessage}</Text>
+          </View>
+        )}
 
-        <Pressable style={styles.button} onPress={() => navigation.navigate('Home')}>
+        <Pressable style={styles.button} onPress={() => navigation.navigate('Dashboard')}>
           <Text style={styles.buttonText}>Verdergaan</Text>
         </Pressable>
       </View>
@@ -192,6 +226,16 @@ const styles = StyleSheet.create({
     color: '#000000',
     fontSize: 15,
     lineHeight: 20,
+  },
+  emptyText: {
+    position: 'absolute',
+    left: 24,
+    right: 24,
+    top: 42,
+    color: '#000000',
+    fontSize: 15,
+    lineHeight: 20,
+    textAlign: 'center',
   },
   cardArrow: {
     position: 'absolute',

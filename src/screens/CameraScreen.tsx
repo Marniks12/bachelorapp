@@ -1,37 +1,115 @@
 import { useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { createDemoAnalysis } from '../api/analysisApi';
+import { uploadAudiogramAnalysis } from '../api/analysisApi';
 import { PhoneCard } from '../components/PhoneCard';
 import { RootStackParamList } from '../types/navigation';
 
 type CameraScreenProps = NativeStackScreenProps<RootStackParamList, 'Camera'>;
 
 export function CameraScreen({ navigation }: CameraScreenProps) {
-  const [isCreatingAnalysis, setIsCreatingAnalysis] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<ImagePicker.ImagePickerAsset | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   async function handleTakePhoto() {
-    if (isCreatingAnalysis) {
+    if (isUploading) {
       return;
     }
 
     try {
-      setIsCreatingAnalysis(true);
       setErrorMessage(null);
-      const analysis = await createDemoAnalysis();
-      navigation.navigate('Result', {
-        analysisId: analysis._id,
-        severity: analysis.severity,
-        pta: analysis.pta,
-        recommendation: analysis.recommendation,
-        disclaimer: analysis.disclaimer,
+
+      const permission = await ImagePicker.requestCameraPermissionsAsync();
+
+      if (!permission.granted) {
+        setErrorMessage('Camera-toegang is nodig om een audiogram te fotograferen.');
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [4, 3],
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.9,
       });
+
+      if (!result.canceled) {
+        setSelectedImage(result.assets[0]);
+      }
     } catch {
-      setErrorMessage('Analyse kon niet aangemaakt worden.');
+      setErrorMessage('Foto maken is mislukt. Probeer opnieuw.');
+    }
+  }
+
+  async function handleSelectFromGallery() {
+    if (isUploading) {
+      return;
+    }
+
+    try {
+      setErrorMessage(null);
+
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (!permission.granted) {
+        setErrorMessage('Galerij-toegang is nodig om een audiogram te selecteren.');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        allowsEditing: true,
+        aspect: [4, 3],
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.9,
+      });
+
+      if (!result.canceled) {
+        setSelectedImage(result.assets[0]);
+      }
+    } catch {
+      setErrorMessage('Afbeelding selecteren is mislukt. Controleer of het bestand een afbeelding is.');
+    }
+  }
+
+  async function handleUploadAnalysis() {
+    if (isUploading) {
+      return;
+    }
+
+    if (!selectedImage) {
+      setErrorMessage('Selecteer of maak eerst een audiogram-afbeelding.');
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+      setErrorMessage(null);
+
+      const fileName = selectedImage.fileName ?? `audiogram-${Date.now()}.jpg`;
+      const mimeType = selectedImage.mimeType ?? 'image/jpeg';
+
+      if (!mimeType.startsWith('image/')) {
+        setErrorMessage('Ongeldig bestand. Kies een afbeelding van een audiogram.');
+        return;
+      }
+
+      const analysis = await uploadAudiogramAnalysis({
+        uri: selectedImage.uri,
+        name: fileName,
+        type: mimeType,
+        patientLabel: 'Emma',
+      });
+
+      navigation.navigate('AnalysisDetails', { analysis });
+    } catch {
+      setErrorMessage(
+        'Upload of AI-analyse is mislukt. Controleer of de backend draait en probeer opnieuw.',
+      );
     } finally {
-      setIsCreatingAnalysis(false);
+      setIsUploading(false);
     }
   }
 
@@ -48,32 +126,57 @@ export function CameraScreen({ navigation }: CameraScreenProps) {
 
       <View style={styles.previewContainer}>
         <View style={styles.scanArea}>
-          <Image source={require('../../assets/image 4.png')} style={styles.previewImage} />
+          <Image
+            source={selectedImage ? { uri: selectedImage.uri } : require('../../assets/image 4.png')}
+            style={styles.previewImage}
+          />
+          {isUploading ? (
+            <View style={styles.loadingOverlay}>
+              <ActivityIndicator color="#ffffff" size="large" />
+              <Text style={styles.loadingText}>AI analyseert...</Text>
+            </View>
+          ) : null}
         </View>
       </View>
 
       <View style={styles.actions}>
-        <View style={styles.actionItem}>
+        <Pressable
+          style={({ pressed }) => [styles.actionItem, pressed && styles.controlPressed]}
+          onPress={handleTakePhoto}
+          disabled={isUploading}
+        >
           <View style={styles.iconCircle}>
             <Image source={require('../../assets/lucide_camera.png')} style={styles.cameraIcon} />
           </View>
           <Text style={styles.actionLabel}>Neem een foto</Text>
-        </View>
+        </Pressable>
 
-        <View style={styles.actionItem}>
+        <Pressable
+          style={({ pressed }) => [styles.actionItem, pressed && styles.controlPressed]}
+          onPress={handleSelectFromGallery}
+          disabled={isUploading}
+        >
           <View style={styles.iconCircle}>
             <Image source={require('../../assets/lineicons_gallery.png')} style={styles.galleryIcon} />
           </View>
           <Text style={styles.actionLabel}>Of uit je gallerij</Text>
-        </View>
+        </Pressable>
       </View>
 
       <Pressable
-        style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
-        onPress={handleTakePhoto}
-        disabled={isCreatingAnalysis}
+        style={({ pressed }) => [
+          styles.button,
+          (!selectedImage || isUploading) && styles.buttonDisabled,
+          pressed && styles.buttonPressed,
+        ]}
+        onPress={handleUploadAnalysis}
+        disabled={!selectedImage || isUploading}
       >
-        <Text style={styles.buttonText}>{isCreatingAnalysis ? 'Analyse bezig...' : 'Neem foto'}</Text>
+        {isUploading ? (
+          <ActivityIndicator color="#ffffff" />
+        ) : (
+          <Text style={styles.buttonText}>Analyseer audiogram</Text>
+        )}
       </Pressable>
 
       {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
@@ -116,6 +219,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   scanArea: {
+    position: 'relative',
     width: '100%',
     aspectRatio: 315 / 363,
     padding: 8,
@@ -128,6 +232,24 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 10,
     resizeMode: 'cover',
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    bottom: 8,
+    left: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(17,24,39,0.72)',
+    borderRadius: 10,
+  },
+  loadingText: {
+    marginTop: 12,
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
+    lineHeight: 22,
   },
   actions: {
     width: '100%',
@@ -186,6 +308,11 @@ const styles = StyleSheet.create({
   },
   buttonPressed: {
     opacity: 0.84,
+  },
+  buttonDisabled: {
+    backgroundColor: '#94A3B8',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   buttonText: {
     color: '#ffffff',

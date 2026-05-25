@@ -1,28 +1,12 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useEffect } from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, StyleSheet, Text, View } from 'react-native';
 
 import { PhoneCard } from '../components/PhoneCard';
 import { RootStackParamList } from '../types/navigation';
 
 type LoadingScreenProps = NativeStackScreenProps<RootStackParamList, 'Loading'>;
 
-export function LoadingScreen({ navigation }: LoadingScreenProps) {
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      navigation.replace('Result', {
-        analysisId: 'demo-loading-result',
-        severity: 'Ernstige hoorverlies',
-        pta: 67,
-        recommendation:
-          'Verdere evaluatie door audioloog of NKO-arts aanbevolen.',
-        disclaimer: 'Deze analyse is een demo en geen medische diagnose.',
-      });
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, [navigation]);
-
+export function LoadingScreen(_props: LoadingScreenProps) {
   return (
     <PhoneCard contentStyle={styles.card}>
       <Image source={require('../../assets/image 13.png')} style={styles.image} />
@@ -32,8 +16,8 @@ export function LoadingScreen({ navigation }: LoadingScreenProps) {
         <Text style={styles.subtitle}>Dit duurt een paar seconden</Text>
       </View>
 
-      <View style={styles.progressBackground}>
-        <View style={styles.progressFill} />
+      <View style={styles.spinnerWrap}>
+        <ActivityIndicator color="#E60F30" size="large" />
       </View>
     </PhoneCard>
   );
@@ -73,18 +57,8 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     textAlign: 'center',
   },
-  progressBackground: {
-    width: '100%',
-    maxWidth: 242,
-    height: 20,
-    backgroundColor: '#B8B6B6',
-    borderRadius: 25,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    width: '80%',
-    height: '100%',
-    backgroundColor: '#E60F30',
-    borderRadius: 25,
+  spinnerWrap: {
+    height: 44,
+    justifyContent: 'center',
   },
 });

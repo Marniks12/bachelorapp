@@ -1,3 +1,5 @@
+import { Analysis } from '../api/analysisApi';
+
 export type RootStackParamList = {
   SignUp: undefined;
   Login: undefined;
@@ -7,13 +9,14 @@ export type RootStackParamList = {
   Camera: undefined;
   Loading: undefined;
   Result: {
-    analysisId: string;
-    severity: string;
-    pta: number;
-    recommendation: string;
-    disclaimer: string;
+    analysis: Analysis;
   };
-  ResultDetail: undefined;
+  AnalysisDetails: {
+    analysis: Analysis;
+  };
+  ResultDetail: {
+    analysis: Analysis;
+  };
   OldAnalysis: undefined;
   AnalysisOverview: undefined;
   DashboardNewUser: undefined;

@@ -132,11 +132,15 @@ analysisRouter.post(
     }
 
     try {
+      const patientLabel =
+        typeof req.body.patientLabel === 'string' && req.body.patientLabel.trim()
+          ? req.body.patientLabel.trim()
+          : 'Emma';
       const imageUrl = await uploadAudiogramToCloudinary(req.file);
-      const analysisResult = await requestN8nAnalysis('Emma', req.file.originalname, imageUrl);
+      const analysisResult = await requestN8nAnalysis(patientLabel, req.file.originalname, imageUrl);
 
       const analysis = await Analysis.create({
-        patientLabel: 'Emma',
+        patientLabel,
         imageName: req.file.originalname,
         imageUrl,
         ...analysisResult,

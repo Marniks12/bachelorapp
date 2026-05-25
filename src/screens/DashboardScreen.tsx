@@ -11,39 +11,19 @@ type DashboardAnalysisCard = {
   patientLabel: string;
   severity: string;
   createdAt: string;
+  imageUrl?: string;
+  analysis?: Analysis;
 };
-
-const MOCK_ANALYSIS_DATE = '24 februari 2026';
-const MOCK_ANALYSIS_CARDS: DashboardAnalysisCard[] = [
-  {
-    id: 'mock-latest',
-    patientLabel: 'Emma',
-    severity: 'Ernstige gehoorvlies',
-    createdAt: MOCK_ANALYSIS_DATE,
-  },
-  {
-    id: 'mock-earlier-one',
-    patientLabel: 'Emma',
-    severity: 'Matige gehoorverlies',
-    createdAt: MOCK_ANALYSIS_DATE,
-  },
-  {
-    id: 'mock-earlier-two',
-    patientLabel: 'Emma',
-    severity: 'Lichte gehoorverlies',
-    createdAt: MOCK_ANALYSIS_DATE,
-  },
-];
 
 function formatAnalysisDate(createdAt?: string): string {
   if (!createdAt) {
-    return MOCK_ANALYSIS_DATE;
+    return 'Onbekende datum';
   }
 
   const date = new Date(createdAt);
 
   if (Number.isNaN(date.getTime())) {
-    return MOCK_ANALYSIS_DATE;
+    return 'Onbekende datum';
   }
 
   return new Intl.DateTimeFormat('nl-BE', {
@@ -85,9 +65,11 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
     patientLabel: analysis.patientLabel,
     severity: analysis.severity,
     createdAt: formatAnalysisDate(analysis.createdAt),
+    imageUrl: analysis.imageUrl,
+    analysis,
   }));
-  const visibleAnalysisCards = analysisCards.length > 0 ? analysisCards : MOCK_ANALYSIS_CARDS;
   const statusMessage = isLoadingAnalyses ? 'Analyses laden...' : errorMessage;
+  const emptyMessage = !statusMessage && analysisCards.length === 0 ? 'Nog geen analyses beschikbaar.' : null;
 
   return (
     <ScrollView
@@ -119,15 +101,26 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
           </View>
         ) : null}
 
-        {!statusMessage && visibleAnalysisCards.map((analysis, index) => {
+        {emptyMessage ? (
+          <View style={styles.latestCard}>
+            <Text style={styles.emptyText}>{emptyMessage}</Text>
+          </View>
+        ) : null}
+
+        {!statusMessage && analysisCards.map((analysis, index) => {
           if (index === 0) {
             return (
               <Pressable
                 key={analysis.id}
                 style={styles.latestCard}
-                onPress={() => navigation.navigate('OldAnalysis')}
+                onPress={() =>
+                  analysis.analysis && navigation.navigate('AnalysisDetails', { analysis: analysis.analysis })
+                }
               >
-                <Image source={require('../../assets/image 17.png')} style={styles.latestThumb} />
+                <Image
+                  source={analysis.imageUrl ? { uri: analysis.imageUrl } : require('../../assets/image 17.png')}
+                  style={styles.latestThumb}
+                />
                 <Text style={styles.latestDate}>{analysis.patientLabel}</Text>
                 <Text style={styles.latestSeverity}>{analysis.severity}</Text>
                 <Text style={styles.latestCreatedAt}>{analysis.createdAt}</Text>
@@ -161,9 +154,14 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
             <Pressable
               key={analysis.id}
               style={earlierStyles.card}
-              onPress={() => navigation.navigate('OldAnalysis')}
+              onPress={() =>
+                analysis.analysis && navigation.navigate('AnalysisDetails', { analysis: analysis.analysis })
+              }
             >
-              <Image source={require('../../assets/image 17.png')} style={earlierStyles.thumb} />
+              <Image
+                source={analysis.imageUrl ? { uri: analysis.imageUrl } : require('../../assets/image 17.png')}
+                style={earlierStyles.thumb}
+              />
               <Text style={earlierStyles.patientLabel}>{analysis.patientLabel}</Text>
               <Text style={earlierStyles.createdAt}>{analysis.createdAt}</Text>
               <View style={earlierStyles.pill} />
@@ -321,6 +319,16 @@ const styles = StyleSheet.create({
     color: '#000000',
     fontSize: 15,
     lineHeight: 20,
+  },
+  emptyText: {
+    position: 'absolute',
+    top: 42,
+    left: 24,
+    right: 24,
+    color: '#000000',
+    fontSize: 15,
+    lineHeight: 20,
+    textAlign: 'center',
   },
   latestSeverity: {
     position: 'absolute',
