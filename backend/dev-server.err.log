@@ -1,42 +1,22 @@
-Failed to start Sonaris backend: MongooseServerSelectionError: Could not connect to any servers in your MongoDB Atlas cluster. One common reason is that you're trying to access the database from an IP that isn't whitelisted. Make sure your current IP address is on your Atlas cluster's IP whitelist: https://www.mongodb.com/docs/atlas/security-whitelist/
-    at _handleConnectionErrors (C:\Users\maroj\bachelorapp\backend\node_modules\mongoose\lib\connection.js:1169:11)
-    at NativeConnection.openUri (C:\Users\maroj\bachelorapp\backend\node_modules\mongoose\lib\connection.js:1100:11)
-    at async connectDb (C:\Users\maroj\bachelorapp\backend\src\config\db.ts:10:3)
-    at async startServer (C:\Users\maroj\bachelorapp\backend\src\server.ts:23:3) {
-  errorLabelSet: Set(0) {},
-  reason: TopologyDescription {
-    type: 'ReplicaSetNoPrimary',
-    servers: Map(3) {
-      'ac-jet2ux4-shard-00-02.wgqulrl.mongodb.net:27017' => [ServerDescription],
-      'ac-jet2ux4-shard-00-00.wgqulrl.mongodb.net:27017' => [ServerDescription],
-      'ac-jet2ux4-shard-00-01.wgqulrl.mongodb.net:27017' => [ServerDescription]
-    },
-    stale: false,
-    compatible: true,
-    heartbeatFrequencyMS: 10000,
-    localThresholdMS: 15,
-    setName: 'atlas-g3ng6n-shard-0',
-    maxElectionId: null,
-    maxSetVersion: null,
-    commonWireVersion: 0,
-    logicalSessionTimeoutMinutes: null
-  },
-  code: undefined,
-  cause: TopologyDescription {
-    type: 'ReplicaSetNoPrimary',
-    servers: Map(3) {
-      'ac-jet2ux4-shard-00-02.wgqulrl.mongodb.net:27017' => [ServerDescription],
-      'ac-jet2ux4-shard-00-00.wgqulrl.mongodb.net:27017' => [ServerDescription],
-      'ac-jet2ux4-shard-00-01.wgqulrl.mongodb.net:27017' => [ServerDescription]
-    },
-    stale: false,
-    compatible: true,
-    heartbeatFrequencyMS: 10000,
-    localThresholdMS: 15,
-    setName: 'atlas-g3ng6n-shard-0',
-    maxElectionId: null,
-    maxSetVersion: null,
-    commonWireVersion: 0,
-    logicalSessionTimeoutMinutes: null
-  }
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::5000
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at app.listen (C:\Users\maroj\bachelorapp\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\maroj\bachelorapp\backend\src\server.ts:25:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 5000
 }
+
+Node.js v24.12.0

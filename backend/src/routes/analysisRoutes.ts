@@ -28,22 +28,55 @@ const fallbackAnalysisResult: AnalysisResult = {
   disclaimer: 'Deze analyse is automatisch gegenereerd en vormt geen medische diagnose.',
 };
 
-function isAnalysisResult(value: unknown): value is AnalysisResult {
+function isRecord(value: unknown): value is Record<string, unknown> {
   if (!value || typeof value !== 'object') {
     return false;
   }
 
-  const result = value as Partial<AnalysisResult>;
+  return !Array.isArray(value);
+}
 
-  return (
-    typeof result.success === 'boolean' &&
-    typeof result.severity === 'string' &&
-    typeof result.pta === 'number' &&
-    typeof result.confidence === 'string' &&
-    typeof result.summary === 'string' &&
-    typeof result.recommendation === 'string' &&
-    typeof result.disclaimer === 'string'
-  );
+function normalizeN8nPayload(value: unknown): Record<string, unknown> | null {
+  const result = Array.isArray(value) ? value[0] : value;
+
+  if (!isRecord(result) || typeof result.severity !== 'string') {
+    return null;
+  }
+
+  return result;
+}
+
+function toAnalysisResult(result: Record<string, unknown>): AnalysisResult {
+  return {
+    success: typeof result.success === 'boolean' ? result.success : true,
+    severity: result.severity as string,
+    pta: typeof result.pta === 'number' ? result.pta : 0,
+    confidence: typeof result.confidence === 'string' ? result.confidence : '',
+    summary: typeof result.summary === 'string' ? result.summary : '',
+    recommendation: typeof result.recommendation === 'string' ? result.recommendation : '',
+    disclaimer:
+      typeof result.disclaimer === 'string'
+        ? result.disclaimer
+        : 'Deze analyse is automatisch gegenereerd en vormt geen medische diagnose.',
+  };
+}
+
+function getN8nWebhookUrl(): string | null {
+  const webhookUrl = process.env.N8N_WEBHOOK_URL;
+
+  console.log('N8N_WEBHOOK_URL exists:', Boolean(webhookUrl));
+
+  if (!webhookUrl) {
+    return null;
+  }
+
+  if (webhookUrl.includes('/webhook-test/')) {
+    const productionWebhookUrl = webhookUrl.replace('/webhook-test/', '/webhook/');
+    console.warn('N8N_WEBHOOK_URL contains /webhook-test/; using production webhook URL instead');
+    return productionWebhookUrl;
+  }
+
+  return webhookUrl;
 }
 
 async function requestN8nAnalysis(
@@ -51,12 +84,19 @@ async function requestN8nAnalysis(
   imageName: string,
   imageUrl: string,
 ): Promise<AnalysisResult> {
-  const webhookUrl = process.env.N8N_WEBHOOK_URL;
+  const webhookUrl = getN8nWebhookUrl();
+  const payload = {
+    patientLabel,
+    imageUrl,
+    imageName,
+  };
 
   if (!webhookUrl) {
     console.warn('N8N_WEBHOOK_URL is missing; using fallback analysis');
     return { ...fallbackAnalysisResult };
   }
+
+  console.log('n8n request payload:', payload);
 
   try {
     const response = await fetch(webhookUrl, {
@@ -64,27 +104,34 @@ async function requestN8nAnalysis(
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        patientLabel,
-        imageUrl,
-        imageName,
-      }),
+      body: JSON.stringify(payload),
     });
 
-    if (!response.ok) {
-      console.warn(`n8n analysis failed with status ${response.status}; using fallback analysis`);
+    console.log('n8n response status:', response.status);
+
+    const responseText = await response.text();
+    console.log('raw n8n response text:', responseText);
+
+    let parsedResponse: unknown;
+
+    try {
+      parsedResponse = JSON.parse(responseText);
+    } catch (error) {
+      console.warn('n8n response is not JSON; using fallback analysis', error);
       return { ...fallbackAnalysisResult };
     }
 
-    const result: unknown = await response.json();
+    console.log('parsed n8n response JSON:', parsedResponse);
 
-    if (!isAnalysisResult(result)) {
-      console.warn('n8n analysis returned an unexpected payload; using fallback analysis');
+    const normalizedResult = normalizeN8nPayload(parsedResponse);
+
+    if (!normalizedResult) {
+      console.warn('n8n analysis response does not contain severity; using fallback analysis');
       return { ...fallbackAnalysisResult };
     }
 
     console.log('n8n analysis succeeded');
-    return result;
+    return toAnalysisResult(normalizedResult);
   } catch (error) {
     console.warn('n8n analysis failed; using fallback analysis', error);
     return { ...fallbackAnalysisResult };
