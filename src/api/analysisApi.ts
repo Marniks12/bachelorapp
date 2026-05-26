@@ -1,5 +1,7 @@
-const ANALYSES_URL = 'http://localhost:5000/api/analyses';
-const UPLOAD_ANALYSIS_URL = `${ANALYSES_URL}/upload`;
+import { API_BASE_URL } from './config';
+
+const ANALYSES_URL = `${API_BASE_URL}/api/analyses`;
+const UPLOAD_ANALYSIS_URL = `${API_BASE_URL}/api/analyses/upload`;
 
 export type Analysis = {
   _id: string;
@@ -18,6 +20,8 @@ export type Analysis = {
 };
 
 export async function getAnalyses(): Promise<Analysis[]> {
+  console.log('API_BASE_URL', API_BASE_URL);
+
   const response = await fetch(ANALYSES_URL);
 
   if (!response.ok) {
@@ -29,31 +33,39 @@ export async function getAnalyses(): Promise<Analysis[]> {
 
 export type AudiogramUpload = {
   uri: string;
-  name: string;
-  type: string;
   patientLabel: string;
 };
 
 export async function uploadAudiogramAnalysis(upload: AudiogramUpload): Promise<Analysis> {
+  console.log('API_BASE_URL', API_BASE_URL);
+  console.log('selected image uri', upload.uri);
+
+  const imageResponse = await fetch(upload.uri);
+  const blob = await imageResponse.blob();
+
+  console.log('blob type', blob.type);
+  console.log('blob size', blob.size);
+
   const formData = new FormData();
 
-  formData.append('audiogram', {
-    uri: upload.uri,
-    name: upload.name,
-    type: upload.type,
-  } as unknown as Blob);
-  formData.append('patientLabel', upload.patientLabel);
+  formData.append('audiogram', blob, 'audiogram.jpg');
+  formData.append('patientLabel', 'Emma');
 
   const response = await fetch(UPLOAD_ANALYSIS_URL, {
     method: 'POST',
     body: formData,
   });
 
+  const responseBody = await response.text();
+
+  console.log('upload response status', response.status);
+  console.log('upload response body', responseBody);
+
   if (!response.ok) {
-    throw new Error('Audiogram uploaden mislukt');
+    throw new Error(getResponseMessage(responseBody) ?? 'Audiogram uploaden mislukt');
   }
 
-  const analysis = (await response.json()) as Partial<Analysis>;
+  const analysis = JSON.parse(responseBody) as Partial<Analysis>;
 
   if (
     !analysis._id ||
@@ -70,4 +82,19 @@ export async function uploadAudiogramAnalysis(upload: AudiogramUpload): Promise<
   }
 
   return analysis as Analysis;
+}
+
+function getResponseMessage(responseBody: string): string | null {
+  if (!responseBody.trim()) {
+    return null;
+  }
+
+  try {
+    const payload = JSON.parse(responseBody) as { message?: unknown; error?: unknown };
+    const message = typeof payload.message === 'string' ? payload.message : payload.error;
+
+    return typeof message === 'string' && message.trim() ? message : responseBody;
+  } catch {
+    return responseBody;
+  }
 }

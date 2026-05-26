@@ -88,7 +88,6 @@ export function CameraScreen({ navigation }: CameraScreenProps) {
       setIsUploading(true);
       setErrorMessage(null);
 
-      const fileName = selectedImage.fileName ?? `audiogram-${Date.now()}.jpg`;
       const mimeType = selectedImage.mimeType ?? 'image/jpeg';
 
       if (!mimeType.startsWith('image/')) {
@@ -98,15 +97,14 @@ export function CameraScreen({ navigation }: CameraScreenProps) {
 
       const analysis = await uploadAudiogramAnalysis({
         uri: selectedImage.uri,
-        name: fileName,
-        type: mimeType,
         patientLabel: 'Emma',
       });
 
       navigation.navigate('AnalysisDetails', { analysis });
-    } catch {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : null;
       setErrorMessage(
-        'Upload of AI-analyse is mislukt. Controleer of de backend draait en probeer opnieuw.',
+        message ?? 'Upload of AI-analyse is mislukt. Controleer of de backend draait en probeer opnieuw.',
       );
     } finally {
       setIsUploading(false);
