@@ -1,4 +1,4 @@
-import { API_BASE_URL } from './config';
+import { API_BASE_URL } from '../config/api';
 
 const ANALYSES_URL = `${API_BASE_URL}/api/analyses`;
 const UPLOAD_ANALYSIS_URL = `${API_BASE_URL}/api/analyses/upload`;
