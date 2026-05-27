@@ -1,12 +1,22 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import { AuthUser, login as loginRequest, signup as signupRequest } from '../api/authApi';
-import { clearAuthToken, getStoredAuth, saveAuthToken, saveAuthUser } from './tokenStorage';
+
+const AUTH_TOKEN_KEY = 'sonaris.authToken';
+const AUTH_USER_KEY = 'sonaris.authUser';
+
+type StoredAuth = {
+  token: string | null;
+  user: AuthUser | null;
+};
 
 type AuthContextValue = {
   user: AuthUser | null;
   token: string | null;
+  loading: boolean;
   isLoading: boolean;
+  isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -18,10 +28,47 @@ type AuthProviderProps = {
   children: ReactNode;
 };
 
+async function getStoredAuth(): Promise<StoredAuth> {
+  const [token, userJson] = await Promise.all([
+    AsyncStorage.getItem(AUTH_TOKEN_KEY),
+    AsyncStorage.getItem(AUTH_USER_KEY),
+  ]);
+
+  if (!token || !userJson) {
+    return { token: null, user: null };
+  }
+
+  try {
+    const user = JSON.parse(userJson) as AuthUser;
+    return { token, user };
+  } catch {
+    await clearStoredAuth();
+    return { token: null, user: null };
+  }
+}
+
+export async function getAuthToken(): Promise<string | null> {
+  return AsyncStorage.getItem(AUTH_TOKEN_KEY);
+}
+
+async function saveStoredAuth(token: string, user: AuthUser): Promise<void> {
+  await Promise.all([
+    AsyncStorage.setItem(AUTH_TOKEN_KEY, token),
+    AsyncStorage.setItem(AUTH_USER_KEY, JSON.stringify(user)),
+  ]);
+}
+
+export async function clearStoredAuth(): Promise<void> {
+  await Promise.all([
+    AsyncStorage.removeItem(AUTH_TOKEN_KEY),
+    AsyncStorage.removeItem(AUTH_USER_KEY),
+  ]);
+}
+
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
@@ -35,7 +82,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       })
       .finally(() => {
         if (isMounted) {
-          setIsLoading(false);
+          setLoading(false);
         }
       });
 
@@ -46,34 +93,38 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const login = useCallback(async (email: string, password: string) => {
     const auth = await loginRequest({ email, password });
-    await Promise.all([saveAuthToken(auth.token), saveAuthUser(auth.user)]);
+    await saveStoredAuth(auth.token, auth.user);
     setToken(auth.token);
     setUser(auth.user);
   }, []);
 
   const signup = useCallback(async (name: string, email: string, password: string) => {
     const auth = await signupRequest({ name, email, password });
-    await Promise.all([saveAuthToken(auth.token), saveAuthUser(auth.user)]);
+    await saveStoredAuth(auth.token, auth.user);
     setToken(auth.token);
     setUser(auth.user);
   }, []);
 
   const logout = useCallback(async () => {
-    await clearAuthToken();
+    await clearStoredAuth();
     setToken(null);
     setUser(null);
   }, []);
+
+  const isAuthenticated = Boolean(token && user);
 
   const value = useMemo(
     () => ({
       user,
       token,
-      isLoading,
+      loading,
+      isLoading: loading,
+      isAuthenticated,
       login,
       signup,
       logout,
     }),
-    [isLoading, login, logout, signup, token, user],
+    [isAuthenticated, loading, login, logout, signup, token, user],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

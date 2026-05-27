@@ -2,7 +2,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { AnalysisOverviewScreen } from '../screens/AnalysisOverviewScreen';
-import { useAuth } from '../auth/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import { CameraScreen } from '../screens/CameraScreen';
 import { DashboardNewUserScreen } from '../screens/DashboardNewUserScreen';
 import { DashboardScreen } from '../screens/DashboardScreen';
@@ -13,25 +13,25 @@ import { LoginScreen } from '../screens/LoginScreen';
 import { OldAnalysisScreen } from '../screens/OldAnalysisScreen';
 import { ResultDetailScreen } from '../screens/ResultDetailScreen';
 import { ResultScreen } from '../screens/ResultScreen';
-import { SignUpScreen } from '../screens/SignUpScreen';
+import { SignupScreen } from '../screens/SignupScreen';
 import { RootStackParamList } from '../types/navigation';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function AppNavigator() {
-  const { token, isLoading } = useAuth();
+  const { loading, isAuthenticated } = useAuth();
 
-  if (isLoading) {
+  if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator color="#E60F30" size="large" />
+        <ActivityIndicator color="#0F2A44" size="large" />
       </View>
     );
   }
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {token ? (
+      {isAuthenticated ? (
         <>
           <Stack.Screen name="Dashboard" component={DashboardScreen} />
           <Stack.Screen name="Home" component={HomeScreen} />
@@ -48,7 +48,7 @@ export function AppNavigator() {
       ) : (
         <>
           <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="SignUp" component={SignUpScreen} />
+          <Stack.Screen name="Signup" component={SignupScreen} />
         </>
       )}
     </Stack.Navigator>

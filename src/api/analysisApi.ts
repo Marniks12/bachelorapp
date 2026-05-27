@@ -1,4 +1,4 @@
-import { getAuthToken } from '../auth/tokenStorage';
+import { clearStoredAuth, getAuthToken } from '../context/AuthContext';
 import { API_BASE_URL } from '../config/api';
 
 const ANALYSES_URL = `${API_BASE_URL}/api/analyses`;
@@ -30,6 +30,11 @@ export async function getAnalyses(): Promise<Analysis[]> {
   const responseBody = await response.text();
 
   if (!response.ok) {
+    if (response.status === 401) {
+      await clearStoredAuth();
+      throw new Error('Sessie verlopen. Log opnieuw in.');
+    }
+
     throw new Error(getResponseMessage(responseBody) ?? 'Analyses ophalen mislukt');
   }
 
@@ -68,6 +73,11 @@ export async function uploadAudiogramAnalysis(upload: AudiogramUpload): Promise<
   console.log('upload response body', responseBody);
 
   if (!response.ok) {
+    if (response.status === 401) {
+      await clearStoredAuth();
+      throw new Error('Sessie verlopen. Log opnieuw in.');
+    }
+
     throw new Error(getResponseMessage(responseBody) ?? 'Audiogram uploaden mislukt');
   }
 

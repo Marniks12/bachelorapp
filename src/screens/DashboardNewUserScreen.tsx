@@ -3,13 +3,13 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Analysis, getAnalyses } from '../api/analysisApi';
-import { useAuth } from '../auth/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import { RootStackParamList } from '../types/navigation';
 
 type DashboardNewUserScreenProps = NativeStackScreenProps<RootStackParamList, 'DashboardNewUser'>;
 
 export function DashboardNewUserScreen({ navigation }: DashboardNewUserScreenProps) {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [latestAnalysis, setLatestAnalysis] = useState<Analysis | null>(null);
   const [statusMessage, setStatusMessage] = useState('Analyses laden...');
 
@@ -19,11 +19,16 @@ export function DashboardNewUserScreen({ navigation }: DashboardNewUserScreenPro
       const analyses = await getAnalyses();
       setLatestAnalysis(analyses[0] ?? null);
       setStatusMessage(analyses.length === 0 ? 'Nog geen analyses beschikbaar.' : '');
-    } catch {
+    } catch (error) {
       setLatestAnalysis(null);
-      setStatusMessage('Analyses konden niet geladen worden.');
+      const message = error instanceof Error ? error.message : 'Analyses konden niet geladen worden.';
+      setStatusMessage(message);
+
+      if (message.includes('Sessie verlopen')) {
+        await logout();
+      }
     }
-  }, []);
+  }, [logout]);
 
   useEffect(() => {
     loadLatestAnalysis();

@@ -3,6 +3,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Analysis, getAnalyses } from '../api/analysisApi';
+import { useAuth } from '../context/AuthContext';
 import { RootStackParamList } from '../types/navigation';
 
 type AnalysisOverviewScreenProps = NativeStackScreenProps<RootStackParamList, 'AnalysisOverview'>;
@@ -26,6 +27,7 @@ function formatAnalysisDate(createdAt?: string): string {
 }
 
 export function AnalysisOverviewScreen({ navigation }: AnalysisOverviewScreenProps) {
+  const { logout } = useAuth();
   const [analyses, setAnalyses] = useState<Analysis[]>([]);
   const [statusMessage, setStatusMessage] = useState('Analyses laden...');
 
@@ -35,11 +37,16 @@ export function AnalysisOverviewScreen({ navigation }: AnalysisOverviewScreenPro
       const analyses = await getAnalyses();
       setAnalyses(analyses);
       setStatusMessage(analyses.length === 0 ? 'Nog geen analyses beschikbaar.' : '');
-    } catch {
+    } catch (error) {
       setAnalyses([]);
-      setStatusMessage('Analyses konden niet geladen worden.');
+      const message = error instanceof Error ? error.message : 'Analyses konden niet geladen worden.';
+      setStatusMessage(message);
+
+      if (message.includes('Sessie verlopen')) {
+        await logout();
+      }
     }
-  }, []);
+  }, [logout]);
 
   useEffect(() => {
     loadAnalyses();

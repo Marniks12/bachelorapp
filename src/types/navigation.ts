@@ -1,7 +1,7 @@
 import { Analysis } from '../api/analysisApi';
 
 export type RootStackParamList = {
-  SignUp: undefined;
+  Signup: undefined;
   Login: undefined;
   Dashboard: undefined;
   Home: undefined;

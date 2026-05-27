@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { useAuth } from '../auth/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import { RootStackParamList } from '../types/navigation';
 
-type SignUpScreenProps = NativeStackScreenProps<RootStackParamList, 'SignUp'>;
+type SignupScreenProps = NativeStackScreenProps<RootStackParamList, 'Signup'>;
 
-export function SignUpScreen({ navigation }: SignUpScreenProps) {
+export function SignupScreen({ navigation }: SignupScreenProps) {
   const { signup } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 24,
-    backgroundColor: '#E60F30',
+    backgroundColor: '#0F2A44',
     borderRadius: 36,
   },
   logoText: {
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 6,
-    backgroundColor: '#E60F30',
+    backgroundColor: '#0F2A44',
     borderRadius: 999,
   },
   buttonPressed: {
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   linkText: {
-    color: '#E60F30',
+    color: '#0F2A44',
     fontSize: 15,
     fontWeight: '700',
   },

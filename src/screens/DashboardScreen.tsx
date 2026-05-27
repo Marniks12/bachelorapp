@@ -3,7 +3,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Analysis, getAnalyses } from '../api/analysisApi';
-import { useAuth } from '../auth/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import { RootStackParamList } from '../types/navigation';
 
 type DashboardScreenProps = NativeStackScreenProps<RootStackParamList, 'Dashboard'>;
@@ -46,13 +46,18 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
       setErrorMessage(null);
       const analyses = await getAnalyses();
       setAnalyses(analyses);
-    } catch {
+    } catch (error) {
       setAnalyses([]);
-      setErrorMessage('Analyses konden niet geladen worden.');
+      const message = error instanceof Error ? error.message : 'Analyses konden niet geladen worden.';
+      setErrorMessage(message);
+
+      if (message.includes('Sessie verlopen')) {
+        await logout();
+      }
     } finally {
       setIsLoadingAnalyses(false);
     }
-  }, []);
+  }, [logout]);
 
   useEffect(() => {
     loadAnalyses();
@@ -253,7 +258,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   logoutText: {
-    color: '#334155',
+    color: '#0F2A44',
     fontSize: 13,
     fontWeight: '600',
     lineHeight: 16,

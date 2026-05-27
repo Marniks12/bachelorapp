@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { useAuth } from '../auth/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import { RootStackParamList } from '../types/navigation';
 
 type LoginScreenProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
@@ -80,7 +80,7 @@ export function LoginScreen({ navigation }: LoginScreenProps) {
 
         <View style={styles.bottomRow}>
           <Text style={styles.bottomText}>Nog geen account? </Text>
-          <Pressable onPress={() => navigation.navigate('SignUp')}>
+          <Pressable onPress={() => navigation.navigate('Signup')}>
             <Text style={styles.linkText}>Maak er een aan</Text>
           </Pressable>
         </View>
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 24,
-    backgroundColor: '#E60F30',
+    backgroundColor: '#0F2A44',
     borderRadius: 36,
   },
   logoText: {
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 6,
-    backgroundColor: '#E60F30',
+    backgroundColor: '#0F2A44',
     borderRadius: 999,
   },
   buttonPressed: {
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   linkText: {
-    color: '#E60F30',
+    color: '#0F2A44',
     fontSize: 15,
     fontWeight: '700',
   },

@@ -5,11 +5,13 @@ import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'rea
 
 import { uploadAudiogramAnalysis } from '../api/analysisApi';
 import { PhoneCard } from '../components/PhoneCard';
+import { useAuth } from '../context/AuthContext';
 import { RootStackParamList } from '../types/navigation';
 
 type CameraScreenProps = NativeStackScreenProps<RootStackParamList, 'Camera'>;
 
 export function CameraScreen({ navigation }: CameraScreenProps) {
+  const { logout } = useAuth();
   const [selectedImage, setSelectedImage] = useState<ImagePicker.ImagePickerAsset | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -106,6 +108,10 @@ export function CameraScreen({ navigation }: CameraScreenProps) {
       setErrorMessage(
         message ?? 'Upload of AI-analyse is mislukt. Controleer of de backend draait en probeer opnieuw.',
       );
+
+      if (message?.includes('Sessie verlopen')) {
+        await logout();
+      }
     } finally {
       setIsUploading(false);
     }
