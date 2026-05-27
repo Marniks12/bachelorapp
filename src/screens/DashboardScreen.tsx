@@ -92,7 +92,10 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
       <View style={styles.content}>
         <Text style={styles.greeting} numberOfLines={1}>Hallo {user?.name ?? 'Sonaris'}</Text>
         <Text style={styles.subtitle}>Welkom terug bij Sonaris</Text>
-        <Pressable style={styles.logoutButton} onPress={handleLogout}>
+        <Pressable
+          style={({ pressed }) => [styles.logoutButton, pressed && styles.logoutButtonPressed]}
+          onPress={handleLogout}
+        >
           <Text style={styles.logoutText}>Uitloggen</Text>
         </Pressable>
 
@@ -253,20 +256,29 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     position: 'absolute',
-    top: 88,
-    right: 28,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    top: 22,
+    right: 22,
+    zIndex: 20,
+    minWidth: 120,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 18,
+    paddingVertical: 10,
     backgroundColor: '#0F2A44',
     borderColor: '#0F2A44',
-    borderRadius: 999,
+    borderRadius: 10,
     borderWidth: 1,
+    elevation: 10,
+  },
+  logoutButtonPressed: {
+    opacity: 0.82,
   },
   logoutText: {
     color: '#ffffff',
-    fontSize: 13,
-    fontWeight: '600',
-    lineHeight: 16,
+    fontSize: 15,
+    fontWeight: '700',
+    lineHeight: 20,
   },
   scanCard: {
     position: 'absolute',
