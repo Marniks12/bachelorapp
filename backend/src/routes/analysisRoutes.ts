@@ -2,6 +2,7 @@ import { Router } from 'express';
 import multer from 'multer';
 
 import { cloudinary } from '../config/cloudinary';
+import { requireAuth } from '../middleware/authMiddleware';
 import { Analysis } from '../models/Analysis';
 
 export const analysisRouter = Router();
@@ -162,6 +163,7 @@ function uploadAudiogramToCloudinary(file: Express.Multer.File): Promise<string>
 
 analysisRouter.post(
   '/upload',
+  requireAuth,
   (req, res, next) => {
     uploadAudiogram(req, res, (error) => {
       if (error) {
@@ -187,6 +189,7 @@ analysisRouter.post(
       const analysisResult = await requestN8nAnalysis(patientLabel, req.file.originalname, imageUrl);
 
       const analysis = await Analysis.create({
+        userId: req.user!._id,
         patientLabel,
         imageName: req.file.originalname,
         imageUrl,
@@ -202,7 +205,7 @@ analysisRouter.post(
   },
 );
 
-analysisRouter.post('/', async (req, res, next) => {
+analysisRouter.post('/', requireAuth, async (req, res, next) => {
   try {
     const { patientLabel, imageName } = req.body as {
       patientLabel?: string;
@@ -215,6 +218,7 @@ analysisRouter.post('/', async (req, res, next) => {
     }
 
     const analysis = await Analysis.create({
+      userId: req.user!._id,
       patientLabel,
       imageName,
       success: true,
@@ -232,9 +236,9 @@ analysisRouter.post('/', async (req, res, next) => {
   }
 });
 
-analysisRouter.get('/', async (_req, res, next) => {
+analysisRouter.get('/', requireAuth, async (req, res, next) => {
   try {
-    const analyses = await Analysis.find().sort({ createdAt: -1 });
+    const analyses = await Analysis.find({ userId: req.user!._id }).sort({ createdAt: -1 });
     res.json(analyses);
   } catch (error) {
     next(error);

@@ -1,0 +1,78 @@
+import { API_BASE_URL } from '../config/api';
+
+export type AuthUser = {
+  _id: string;
+  name: string;
+  email: string;
+};
+
+export type AuthResponse = {
+  token: string;
+  user: AuthUser;
+};
+
+type SignupPayload = {
+  name: string;
+  email: string;
+  password: string;
+};
+
+type LoginPayload = {
+  email: string;
+  password: string;
+};
+
+async function parseAuthResponse(response: Response): Promise<AuthResponse> {
+  const responseBody = await response.text();
+
+  if (!response.ok) {
+    throw new Error(getResponseMessage(responseBody) ?? 'Authenticatie mislukt');
+  }
+
+  const payload = JSON.parse(responseBody) as Partial<AuthResponse>;
+
+  if (!payload.token || !payload.user?._id || !payload.user.email || !payload.user.name) {
+    throw new Error('Ongeldig authenticatieantwoord ontvangen');
+  }
+
+  return payload as AuthResponse;
+}
+
+export async function signup(payload: SignupPayload): Promise<AuthResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/auth/signup`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  return parseAuthResponse(response);
+}
+
+export async function login(payload: LoginPayload): Promise<AuthResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  return parseAuthResponse(response);
+}
+
+function getResponseMessage(responseBody: string): string | null {
+  if (!responseBody.trim()) {
+    return null;
+  }
+
+  try {
+    const payload = JSON.parse(responseBody) as { message?: unknown; error?: unknown };
+    const message = typeof payload.message === 'string' ? payload.message : payload.error;
+
+    return typeof message === 'string' && message.trim() ? message : responseBody;
+  } catch {
+    return responseBody;
+  }
+}

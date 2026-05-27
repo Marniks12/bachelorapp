@@ -3,6 +3,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Analysis, getAnalyses } from '../api/analysisApi';
+import { useAuth } from '../auth/AuthContext';
 import { RootStackParamList } from '../types/navigation';
 
 type DashboardScreenProps = NativeStackScreenProps<RootStackParamList, 'Dashboard'>;
@@ -34,6 +35,7 @@ function formatAnalysisDate(createdAt?: string): string {
 }
 
 export function DashboardScreen({ navigation }: DashboardScreenProps) {
+  const { user, logout } = useAuth();
   const [analyses, setAnalyses] = useState<Analysis[]>([]);
   const [isLoadingAnalyses, setIsLoadingAnalyses] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -78,8 +80,11 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.content}>
-        <Text style={styles.greeting}>Hallo Emma</Text>
+        <Text style={styles.greeting} numberOfLines={1}>Hallo {user?.name ?? 'Sonaris'}</Text>
         <Text style={styles.subtitle}>Welkom terug bij Sonaris</Text>
+        <Pressable style={styles.logoutButton} onPress={logout}>
+          <Text style={styles.logoutText}>Uitloggen</Text>
+        </Pressable>
 
         <Pressable style={styles.scanCard} onPress={() => navigation.navigate('Camera')}>
           <Image source={require('../../assets/Rectangle.png')} style={styles.scanIcon} />
@@ -220,6 +225,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 90,
     left: 49,
+    width: 190,
     color: '#000000',
     fontFamily: 'Anek Tamil',
     fontSize: 24,
@@ -234,6 +240,23 @@ const styles = StyleSheet.create({
     color: 'rgba(0,0,0,0.72)',
     fontSize: 15,
     lineHeight: 20,
+  },
+  logoutButton: {
+    position: 'absolute',
+    top: 88,
+    right: 28,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: '#F8FAFC',
+    borderColor: '#CBD5E1',
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  logoutText: {
+    color: '#334155',
+    fontSize: 13,
+    fontWeight: '600',
+    lineHeight: 16,
   },
   scanCard: {
     position: 'absolute',

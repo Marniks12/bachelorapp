@@ -4,6 +4,7 @@ import express from 'express';
 
 import { connectDb } from './config/db';
 import { analysisRouter } from './routes/analysisRoutes';
+import { authRouter } from './routes/authRoutes';
 
 dotenv.config();
 
@@ -17,6 +18,7 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', service: 'sonaris-backend' });
 });
 
+app.use('/api/auth', authRouter);
 app.use('/api/analyses', analysisRouter);
 
 async function startServer() {

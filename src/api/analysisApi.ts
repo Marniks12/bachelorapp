@@ -1,3 +1,4 @@
+import { getAuthToken } from '../auth/tokenStorage';
 import { API_BASE_URL } from '../config/api';
 
 const ANALYSES_URL = `${API_BASE_URL}/api/analyses`;
@@ -22,13 +23,17 @@ export type Analysis = {
 export async function getAnalyses(): Promise<Analysis[]> {
   console.log('API_BASE_URL', API_BASE_URL);
 
-  const response = await fetch(ANALYSES_URL);
+  const response = await fetch(ANALYSES_URL, {
+    headers: await getAuthHeaders(),
+  });
+
+  const responseBody = await response.text();
 
   if (!response.ok) {
-    throw new Error('Analyses ophalen mislukt');
+    throw new Error(getResponseMessage(responseBody) ?? 'Analyses ophalen mislukt');
   }
 
-  return response.json();
+  return JSON.parse(responseBody) as Analysis[];
 }
 
 export type AudiogramUpload = {
@@ -49,10 +54,11 @@ export async function uploadAudiogramAnalysis(upload: AudiogramUpload): Promise<
   const formData = new FormData();
 
   formData.append('audiogram', blob, 'audiogram.jpg');
-  formData.append('patientLabel', 'Emma');
+  formData.append('patientLabel', upload.patientLabel);
 
   const response = await fetch(UPLOAD_ANALYSIS_URL, {
     method: 'POST',
+    headers: await getAuthHeaders(),
     body: formData,
   });
 
@@ -82,6 +88,18 @@ export async function uploadAudiogramAnalysis(upload: AudiogramUpload): Promise<
   }
 
   return analysis as Analysis;
+}
+
+export async function checkBackendHealth(): Promise<boolean> {
+  const response = await fetch(`${API_BASE_URL}/health`);
+
+  return response.ok;
+}
+
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const token = await getAuthToken();
+
+  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 function getResponseMessage(responseBody: string): string | null {

@@ -1,6 +1,7 @@
-import { Schema, model } from 'mongoose';
+import { Schema, Types, model } from 'mongoose';
 
 export type AnalysisDocument = {
+  userId: Types.ObjectId;
   patientLabel: string;
   imageName: string;
   imageUrl?: string;
@@ -17,6 +18,12 @@ export type AnalysisDocument = {
 
 const analysisSchema = new Schema<AnalysisDocument>(
   {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+      index: true,
+    },
     patientLabel: {
       type: String,
       required: true,

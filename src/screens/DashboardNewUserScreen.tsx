@@ -3,11 +3,13 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Analysis, getAnalyses } from '../api/analysisApi';
+import { useAuth } from '../auth/AuthContext';
 import { RootStackParamList } from '../types/navigation';
 
 type DashboardNewUserScreenProps = NativeStackScreenProps<RootStackParamList, 'DashboardNewUser'>;
 
 export function DashboardNewUserScreen({ navigation }: DashboardNewUserScreenProps) {
+  const { user } = useAuth();
   const [latestAnalysis, setLatestAnalysis] = useState<Analysis | null>(null);
   const [statusMessage, setStatusMessage] = useState('Analyses laden...');
 
@@ -38,7 +40,7 @@ export function DashboardNewUserScreen({ navigation }: DashboardNewUserScreenPro
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.content}>
-        <Text style={styles.greeting}>Hallo Emma</Text>
+        <Text style={styles.greeting}>Hallo {user?.name ?? 'Sonaris'}</Text>
         <Text style={styles.subtitle}>Welkom Sonaris dashboard</Text>
 
         <Pressable style={styles.scanCard} onPress={() => navigation.navigate('Camera')}>

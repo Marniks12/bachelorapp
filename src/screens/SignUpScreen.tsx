@@ -1,47 +1,101 @@
+import { useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { useAuth } from '../auth/AuthContext';
 import { RootStackParamList } from '../types/navigation';
 
 type SignUpScreenProps = NativeStackScreenProps<RootStackParamList, 'SignUp'>;
 
 export function SignUpScreen({ navigation }: SignUpScreenProps) {
-  return (
-    <View style={styles.container}>
-      <View style={styles.reference}>
-        <View style={styles.card} />
+  const { signup } = useAuth();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  async function handleSignup() {
+    if (isSubmitting) {
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setErrorMessage(null);
+      await signup(name, email, password);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Registreren is mislukt');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  return (
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <View style={styles.card}>
         <View style={styles.logo}>
           <Text style={styles.logoText}>)))</Text>
         </View>
 
+        <Text style={styles.title}>Maak je Sonaris account</Text>
+        <Text style={styles.subtitle}>Bewaar analyses veilig en bekijk alleen je eigen resultaten.</Text>
+
         <TextInput
-          style={styles.emailInput}
-          placeholder="Email adress"
-          placeholderTextColor="rgba(0,0,0,0.51)"
+          style={styles.input}
+          placeholder="Naam"
+          placeholderTextColor="#64748B"
+          autoComplete="name"
+          value={name}
+          onChangeText={setName}
+        />
+
+        <TextInput
+          style={styles.input}
+          placeholder="E-mailadres"
+          placeholderTextColor="#64748B"
           keyboardType="email-address"
           autoCapitalize="none"
+          autoComplete="email"
+          value={email}
+          onChangeText={setEmail}
         />
 
         <TextInput
-          style={styles.passwordInput}
-          placeholder="Password"
-          placeholderTextColor="rgba(0,0,0,0.51)"
+          style={styles.input}
+          placeholder="Wachtwoord"
+          placeholderTextColor="#64748B"
           secureTextEntry
+          autoComplete="new-password"
+          value={password}
+          onChangeText={setPassword}
         />
 
-        <Pressable style={styles.button} onPress={() => navigation.navigate('Home')}>
-          <Text style={styles.buttonText}>Sign up</Text>
+        {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+
+        <Pressable
+          style={({ pressed }) => [
+            styles.button,
+            pressed && styles.buttonPressed,
+            isSubmitting && styles.buttonDisabled,
+          ]}
+          onPress={handleSignup}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? <ActivityIndicator color="#ffffff" /> : <Text style={styles.buttonText}>Account maken</Text>}
         </Pressable>
 
         <View style={styles.bottomRow}>
-          <Text style={styles.bottomText}>Already have an account </Text>
+          <Text style={styles.bottomText}>Heb je al een account? </Text>
           <Pressable onPress={() => navigation.navigate('Login')}>
-            <Text style={styles.linkText}>Login</Text>
+            <Text style={styles.linkText}>Log in</Text>
           </Pressable>
         </View>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -49,103 +103,97 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    backgroundColor: '#ffffff',
-  },
-  reference: {
-    position: 'relative',
-    width: '100%',
-    maxWidth: 393,
-    flex: 1,
-    backgroundColor: '#ffffff',
+    justifyContent: 'center',
+    padding: 24,
+    backgroundColor: '#F8FAFC',
   },
   card: {
-    position: 'absolute',
-    top: 62,
-    left: 34,
-    width: 325,
-    height: 745,
-    backgroundColor: '#FCE2E4',
-    borderRadius: 36,
+    width: '100%',
+    maxWidth: 393,
+    padding: 28,
+    backgroundColor: '#ffffff',
+    borderColor: '#E2E8F0',
+    borderRadius: 24,
+    borderWidth: 1,
   },
   logo: {
-    position: 'absolute',
-    top: 104,
-    left: 154,
-    width: 86,
-    height: 86,
+    width: 72,
+    height: 72,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 24,
     backgroundColor: '#E60F30',
-    borderRadius: 1000,
+    borderRadius: 36,
   },
   logoText: {
     color: '#ffffff',
-    fontSize: 26,
-    fontWeight: '600',
-    lineHeight: 30,
-  },
-  emailInput: {
-    position: 'absolute',
-    top: 306,
-    left: 58,
-    width: 278,
-    height: 60,
-    paddingHorizontal: 22,
-    borderColor: '#000000',
-    borderRadius: 12,
-    borderWidth: 1,
-    color: '#000000',
     fontSize: 24,
-    fontWeight: '600',
+    fontWeight: '700',
+    lineHeight: 28,
   },
-  passwordInput: {
-    position: 'absolute',
-    top: 426,
-    left: 58,
-    width: 278,
-    height: 60,
-    paddingHorizontal: 22,
-    borderColor: '#000000',
-    borderRadius: 12,
+  title: {
+    color: '#0F172A',
+    fontSize: 28,
+    fontWeight: '700',
+    lineHeight: 34,
+  },
+  subtitle: {
+    marginTop: 8,
+    marginBottom: 28,
+    color: '#475569',
+    fontSize: 16,
+    lineHeight: 22,
+  },
+  input: {
+    width: '100%',
+    height: 56,
+    marginBottom: 14,
+    paddingHorizontal: 16,
+    backgroundColor: '#F8FAFC',
+    borderColor: '#CBD5E1',
+    borderRadius: 14,
     borderWidth: 1,
-    color: '#000000',
-    fontSize: 24,
-    fontWeight: '600',
+    color: '#0F172A',
+    fontSize: 16,
+  },
+  errorText: {
+    marginBottom: 14,
+    color: '#DC2626',
+    fontSize: 14,
+    lineHeight: 20,
   },
   button: {
-    position: 'absolute',
-    top: 558,
-    left: 69,
-    width: 255,
-    height: 60,
+    height: 56,
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 6,
     backgroundColor: '#E60F30',
     borderRadius: 999,
   },
+  buttonPressed: {
+    opacity: 0.86,
+  },
+  buttonDisabled: {
+    backgroundColor: '#94A3B8',
+  },
   buttonText: {
     color: '#ffffff',
-    fontSize: 24,
-    fontWeight: '600',
-    lineHeight: 30,
-    textAlign: 'center',
+    fontSize: 18,
+    fontWeight: '700',
+    lineHeight: 24,
   },
   bottomRow: {
-    position: 'absolute',
-    top: 636,
-    left: 0,
-    width: 393,
     flexDirection: 'row',
     justifyContent: 'center',
+    marginTop: 22,
   },
   bottomText: {
-    color: '#000000',
-    fontSize: 16,
-    fontWeight: '400',
+    color: '#475569',
+    fontSize: 15,
   },
   linkText: {
     color: '#E60F30',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '700',
   },
 });
