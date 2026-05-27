@@ -40,6 +40,11 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
   const [isLoadingAnalyses, setIsLoadingAnalyses] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const handleLogout = useCallback(async () => {
+    await logout();
+    navigation.navigate('Login');
+  }, [logout, navigation]);
+
   const loadAnalyses = useCallback(async () => {
     try {
       setIsLoadingAnalyses(true);
@@ -87,7 +92,7 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
       <View style={styles.content}>
         <Text style={styles.greeting} numberOfLines={1}>Hallo {user?.name ?? 'Sonaris'}</Text>
         <Text style={styles.subtitle}>Welkom terug bij Sonaris</Text>
-        <Pressable style={styles.logoutButton} onPress={logout}>
+        <Pressable style={styles.logoutButton} onPress={handleLogout}>
           <Text style={styles.logoutText}>Uitloggen</Text>
         </Pressable>
 
@@ -252,13 +257,13 @@ const styles = StyleSheet.create({
     right: 28,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    backgroundColor: '#F8FAFC',
-    borderColor: '#CBD5E1',
+    backgroundColor: '#0F2A44',
+    borderColor: '#0F2A44',
     borderRadius: 999,
     borderWidth: 1,
   },
   logoutText: {
-    color: '#0F2A44',
+    color: '#ffffff',
     fontSize: 13,
     fontWeight: '600',
     lineHeight: 16,
