@@ -102,7 +102,7 @@ export function CameraScreen({ navigation }: CameraScreenProps) {
         patientLabel: 'Emma',
       });
 
-      navigation.navigate('AnalysisDetails', { analysis });
+      navigation.navigate('Result', { analysis });
     } catch (error) {
       const message = error instanceof Error ? error.message : null;
       setErrorMessage(

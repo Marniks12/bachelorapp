@@ -19,7 +19,7 @@ import { RootStackParamList } from '../types/navigation';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function AppNavigator() {
-  const { loading, isAuthenticated } = useAuth();
+  const { loading, isAuthenticated, entryPoint } = useAuth();
 
   if (loading) {
     return (
@@ -30,7 +30,13 @@ export function AppNavigator() {
   }
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator
+      key={isAuthenticated ? `auth-${entryPoint ?? 'unknown'}` : 'guest'}
+      initialRouteName={
+        isAuthenticated ? (entryPoint === 'signup' ? 'Home' : 'Dashboard') : 'Login'
+      }
+      screenOptions={{ headerShown: false }}
+    >
       {isAuthenticated ? (
         <>
           <Stack.Screen name="Dashboard" component={DashboardScreen} />

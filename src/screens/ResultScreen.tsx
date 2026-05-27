@@ -62,9 +62,9 @@ export function ResultScreen({ navigation, route }: ResultScreenProps) {
 
       <Pressable
         style={({ pressed }) => [styles.downloadButton, pressed && styles.buttonPressed]}
-        onPress={() => navigation.navigate('Dashboard')}
+        onPress={() => navigation.navigate('DashboardNewUser')}
       >
-        <Text style={styles.downloadText}>Naar dashboard</Text>
+        <Text style={styles.downloadText}>Download rapport</Text>
       </Pressable>
     </PhoneCard>
   );

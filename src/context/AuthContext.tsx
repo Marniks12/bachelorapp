@@ -10,12 +10,15 @@ type StoredAuth = {
   user: AuthUser | null;
 };
 
+export type AuthEntryPoint = 'login' | 'signup' | 'restore' | null;
+
 type AuthContextValue = {
   user: AuthUser | null;
   token: string | null;
   loading: boolean;
   isLoading: boolean;
   isAuthenticated: boolean;
+  entryPoint: AuthEntryPoint;
   login: (email: string, password: string) => Promise<void>;
   signup: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -72,6 +75,7 @@ export async function clearStoredAuth(): Promise<void> {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [entryPoint, setEntryPoint] = useState<AuthEntryPoint>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -83,6 +87,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           cachedAuthToken = storedAuth.token;
           setToken(storedAuth.token);
           setUser(storedAuth.user);
+          setEntryPoint(storedAuth.token ? 'restore' : null);
         }
       })
       .finally(() => {
@@ -101,6 +106,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     await saveStoredAuth(auth.token, auth.user);
     setToken(auth.token);
     setUser(auth.user);
+    setEntryPoint('login');
   }, []);
 
   const signup = useCallback(async (name: string, email: string, password: string) => {
@@ -108,12 +114,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     await saveStoredAuth(auth.token, auth.user);
     setToken(auth.token);
     setUser(auth.user);
+    setEntryPoint('signup');
   }, []);
 
   const logout = useCallback(async () => {
     await clearStoredAuth();
     setToken(null);
     setUser(null);
+    setEntryPoint(null);
   }, []);
 
   const isAuthenticated = Boolean(token);
@@ -125,11 +133,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       loading,
       isLoading: loading,
       isAuthenticated,
+      entryPoint,
       login,
       signup,
       logout,
     }),
-    [isAuthenticated, loading, login, logout, signup, token, user],
+    [entryPoint, isAuthenticated, loading, login, logout, signup, token, user],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
