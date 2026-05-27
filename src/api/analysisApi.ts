@@ -1,5 +1,7 @@
-import { clearStoredAuth, getAuthToken } from '../context/AuthContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import { API_BASE_URL } from '../config/api';
+import { clearStoredAuth } from '../context/AuthContext';
 
 const ANALYSES_URL = `${API_BASE_URL}/api/analyses`;
 const UPLOAD_ANALYSIS_URL = `${API_BASE_URL}/api/analyses/upload`;
@@ -107,7 +109,9 @@ export async function checkBackendHealth(): Promise<boolean> {
 }
 
 async function getProtectedHeaders(): Promise<Record<string, string>> {
-  const token = await getAuthToken();
+  const token = await AsyncStorage.getItem('sonaris_token');
+
+  console.log('AUTH TOKEN PRESENT', Boolean(token));
 
   if (!token) {
     await clearStoredAuth();

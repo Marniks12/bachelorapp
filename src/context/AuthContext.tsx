@@ -3,8 +3,9 @@ import { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, 
 
 import { AuthUser, login as loginRequest, signup as signupRequest } from '../api/authApi';
 
-const AUTH_TOKEN_KEY = 'sonaris.authToken';
+const AUTH_TOKEN_KEY = 'sonaris_token';
 const AUTH_USER_KEY = 'sonaris.authUser';
+const LEGACY_AUTH_TOKEN_KEY = 'sonaris.authToken';
 
 let cachedAuthToken: string | null = null;
 
@@ -31,18 +32,26 @@ type AuthProviderProps = {
 };
 
 async function getStoredAuth(): Promise<StoredAuth> {
-  const [token, userJson] = await Promise.all([
+  const [token, legacyToken, userJson] = await Promise.all([
     AsyncStorage.getItem(AUTH_TOKEN_KEY),
+    AsyncStorage.getItem(LEGACY_AUTH_TOKEN_KEY),
     AsyncStorage.getItem(AUTH_USER_KEY),
   ]);
+  const storedToken = token ?? legacyToken;
 
-  if (!token || !userJson) {
+  if (!storedToken || !userJson) {
     return { token: null, user: null };
   }
 
   try {
     const user = JSON.parse(userJson) as AuthUser;
-    return { token, user };
+
+    if (!token && legacyToken) {
+      await AsyncStorage.setItem(AUTH_TOKEN_KEY, legacyToken);
+      await AsyncStorage.removeItem(LEGACY_AUTH_TOKEN_KEY);
+    }
+
+    return { token: storedToken, user };
   } catch {
     await clearStoredAuth();
     return { token: null, user: null };
@@ -72,6 +81,7 @@ export async function clearStoredAuth(): Promise<void> {
 
   await Promise.all([
     AsyncStorage.removeItem(AUTH_TOKEN_KEY),
+    AsyncStorage.removeItem(LEGACY_AUTH_TOKEN_KEY),
     AsyncStorage.removeItem(AUTH_USER_KEY),
   ]);
 }
