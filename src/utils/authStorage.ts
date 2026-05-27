@@ -1,11 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
-
 export const TOKEN_KEY = 'sonaris_auth_token';
 export const USER_KEY = 'sonaris_user';
 
 function canUseLocalStorage(): boolean {
-  return Platform.OS === 'web' && typeof window !== 'undefined' && Boolean(window.localStorage);
+  return typeof window !== 'undefined' && Boolean(window.localStorage);
 }
 
 export async function saveToken(token: string): Promise<void> {
@@ -13,19 +11,17 @@ export async function saveToken(token: string): Promise<void> {
 
   if (canUseLocalStorage()) {
     window.localStorage.setItem(TOKEN_KEY, token);
-    return;
   }
 
   await AsyncStorage.setItem(TOKEN_KEY, token);
 }
 
 export async function getToken(): Promise<string | null> {
-  const token = canUseLocalStorage()
-    ? window.localStorage.getItem(TOKEN_KEY)
-    : await AsyncStorage.getItem(TOKEN_KEY);
+  const token = canUseLocalStorage() ? window.localStorage.getItem(TOKEN_KEY) : null;
+  const storedToken = token ?? (await AsyncStorage.getItem(TOKEN_KEY));
 
-  console.log('TOKEN LOADED BEFORE API CALL', token);
-  return token;
+  console.log('TOKEN LOADED BEFORE API CALL', storedToken);
+  return storedToken;
 }
 
 export async function removeToken(): Promise<void> {
@@ -41,18 +37,15 @@ export async function saveUser(user: unknown): Promise<void> {
 
   if (canUseLocalStorage()) {
     window.localStorage.setItem(USER_KEY, userJson);
-    return;
   }
 
   await AsyncStorage.setItem(USER_KEY, userJson);
 }
 
 export async function getUser(): Promise<string | null> {
-  if (canUseLocalStorage()) {
-    return window.localStorage.getItem(USER_KEY);
-  }
+  const userJson = canUseLocalStorage() ? window.localStorage.getItem(USER_KEY) : null;
 
-  return AsyncStorage.getItem(USER_KEY);
+  return userJson ?? AsyncStorage.getItem(USER_KEY);
 }
 
 export async function removeUser(): Promise<void> {
