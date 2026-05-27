@@ -23,19 +23,28 @@ export type Analysis = {
 
 export async function getAnalyses(): Promise<Analysis[]> {
   console.log('API_BASE_URL', API_BASE_URL);
+  const token = await getStoredAuthToken();
+
+  console.log('GET ANALYSES TOKEN', token);
+
+  if (!token) {
+    throw new Error('Authenticatie vereist');
+  }
+
+  const headers = {
+    Authorization: `Bearer ${token}`,
+  };
+
+  console.log('GET ANALYSES HEADERS', headers);
 
   const response = await fetch(ANALYSES_URL, {
-    headers: await getProtectedHeaders(),
+    method: 'GET',
+    headers,
   });
 
   const responseBody = await response.text();
 
   if (!response.ok) {
-    if (response.status === 401) {
-      await clearStoredAuth();
-      throw new Error('Sessie verlopen. Log opnieuw in.');
-    }
-
     throw new Error(getResponseMessage(responseBody) ?? 'Analyses ophalen mislukt');
   }
 
@@ -108,9 +117,10 @@ export async function checkBackendHealth(): Promise<boolean> {
 }
 
 async function getProtectedHeaders(): Promise<Record<string, string>> {
-  const token = await getToken();
+  const token = await getStoredAuthToken();
 
-  console.log('AUTH TOKEN VALUE', token);
+  console.log('AUTH TOKEN VALUE BEFORE API CALL', token);
+  console.log('AUTH HEADER WILL BE SENT', Boolean(token));
 
   if (!token) {
     await clearStoredAuth();
@@ -118,6 +128,13 @@ async function getProtectedHeaders(): Promise<Record<string, string>> {
   }
 
   return { Authorization: `Bearer ${token}` };
+}
+
+async function getStoredAuthToken(): Promise<string | null> {
+  const browserToken =
+    typeof window !== 'undefined' ? window.localStorage.getItem('sonaris_auth_token') : null;
+
+  return browserToken ?? (await getToken());
 }
 
 function getResponseMessage(responseBody: string): string | null {
