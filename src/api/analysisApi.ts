@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../config/api';
-import { clearStoredAuth } from '../context/AuthContext';
+import { clearStoredAuth, getAuthToken } from '../context/AuthContext';
 import { getToken } from '../utils/authStorage';
 
 const ANALYSES_URL = `${API_BASE_URL}/api/analyses`;
@@ -131,10 +131,11 @@ async function getProtectedHeaders(): Promise<Record<string, string>> {
 }
 
 async function getStoredAuthToken(): Promise<string | null> {
+  const contextToken = await getAuthToken();
   const browserToken =
     typeof window !== 'undefined' ? window.localStorage.getItem('sonaris_auth_token') : null;
 
-  return browserToken ?? (await getToken());
+  return contextToken ?? browserToken ?? (await getToken());
 }
 
 function getResponseMessage(responseBody: string): string | null {
