@@ -11,6 +11,7 @@ type DashboardAnalysisCard = {
   id: string;
   patientLabel: string;
   severity: string;
+  confidence: string;
   createdAt: string;
   imageUrl?: string;
   analysis?: Analysis;
@@ -53,7 +54,7 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
       setAnalyses(analyses);
     } catch (error) {
       setAnalyses([]);
-      const message = error instanceof Error ? error.message : 'Analyses konden niet geladen worden.';
+      const message = getDashboardErrorMessage(error);
       setErrorMessage(message);
 
       if (message.includes('Sessie verlopen') || message.includes('Authenticatie vereist')) {
@@ -76,12 +77,16 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
     id: analysis._id,
     patientLabel: analysis.patientLabel,
     severity: analysis.severity,
+    confidence: analysis.confidence,
     createdAt: formatAnalysisDate(analysis.createdAt),
     imageUrl: analysis.imageUrl,
     analysis,
   }));
   const statusMessage = isLoadingAnalyses ? 'Analyses laden...' : errorMessage;
-  const emptyMessage = !statusMessage && analysisCards.length === 0 ? 'Nog geen analyses beschikbaar.' : null;
+  const emptyMessage =
+    !statusMessage && analysisCards.length === 0
+      ? 'Nog geen analyses gevonden. Start je eerste audiogramanalyse.'
+      : null;
 
   return (
     <ScrollView
@@ -141,7 +146,9 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
                 />
                 <Text style={styles.latestDate}>{analysis.patientLabel}</Text>
                 <Text style={styles.latestSeverity}>{analysis.severity}</Text>
-                <Text style={styles.latestCreatedAt}>{analysis.createdAt}</Text>
+                <Text style={styles.latestCreatedAt}>
+                  {analysis.createdAt} · {analysis.confidence}
+                </Text>
                 <Text style={styles.cardArrow}>›</Text>
               </Pressable>
             );
@@ -155,6 +162,7 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
                   patientLabel: styles.earlierDateOne,
                   pill: styles.pillOne,
                   severity: styles.pillTextOne,
+                  confidence: styles.earlierConfidenceOne,
                   arrow: styles.earlierArrowOne,
                   createdAt: styles.earlierCreatedAtOne,
                 }
@@ -164,6 +172,7 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
                   patientLabel: styles.earlierDateTwo,
                   pill: styles.pillTwo,
                   severity: styles.pillTextTwo,
+                  confidence: styles.earlierConfidenceTwo,
                   arrow: styles.earlierArrowTwo,
                   createdAt: styles.earlierCreatedAtTwo,
                 };
@@ -184,6 +193,7 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
               <Text style={earlierStyles.createdAt}>{analysis.createdAt}</Text>
               <View style={earlierStyles.pill} />
               <Text style={earlierStyles.severity}>{analysis.severity}</Text>
+              <Text style={earlierStyles.confidence}>{analysis.confidence}</Text>
               <Text style={earlierStyles.arrow}>›</Text>
             </Pressable>
           );
@@ -200,6 +210,22 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
       </View>
     </ScrollView>
   );
+}
+
+function getDashboardErrorMessage(error: unknown): string {
+  if (!(error instanceof Error)) {
+    return 'Analyses konden niet geladen worden.';
+  }
+
+  if (error.message.includes('Network request failed') || error.message.includes('Failed to fetch')) {
+    return 'Backend offline. Probeer later opnieuw.';
+  }
+
+  if (error.message.includes('Sessie verlopen') || error.message.includes('Authenticatie vereist')) {
+    return 'Sessie verlopen. Log opnieuw in.';
+  }
+
+  return error.message || 'Analyses konden niet geladen worden.';
 }
 
 const cardShadow = {
@@ -387,9 +413,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 76,
     left: 129,
+    right: 38,
     color: '#000000',
-    fontSize: 15,
-    lineHeight: 20,
+    fontSize: 13,
+    lineHeight: 18,
   },
   cardArrow: {
     position: 'absolute',
@@ -516,6 +543,22 @@ const styles = StyleSheet.create({
     color: '#D9D9D9',
     fontSize: 12,
     lineHeight: 16,
+  },
+  earlierConfidenceOne: {
+    position: 'absolute',
+    top: 65,
+    left: 129,
+    color: '#475569',
+    fontSize: 11,
+    lineHeight: 14,
+  },
+  earlierConfidenceTwo: {
+    position: 'absolute',
+    top: 65,
+    left: 129,
+    color: '#475569',
+    fontSize: 11,
+    lineHeight: 14,
   },
   earlierArrowOne: {
     position: 'absolute',

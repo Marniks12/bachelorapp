@@ -65,8 +65,6 @@ function toAnalysisResult(result: Record<string, unknown>): AnalysisResult {
 function getN8nWebhookUrl(): string | null {
   const webhookUrl = process.env.N8N_WEBHOOK_URL;
 
-  console.log('N8N_WEBHOOK_URL exists:', Boolean(webhookUrl));
-
   if (!webhookUrl) {
     return null;
   }
@@ -97,8 +95,6 @@ async function requestN8nAnalysis(
     return { ...fallbackAnalysisResult };
   }
 
-  console.log('n8n request payload:', payload);
-
   try {
     const response = await fetch(webhookUrl, {
       method: 'POST',
@@ -108,10 +104,7 @@ async function requestN8nAnalysis(
       body: JSON.stringify(payload),
     });
 
-    console.log('n8n response status:', response.status);
-
     const responseText = await response.text();
-    console.log('raw n8n response text:', responseText);
 
     let parsedResponse: unknown;
 
@@ -122,8 +115,6 @@ async function requestN8nAnalysis(
       return { ...fallbackAnalysisResult };
     }
 
-    console.log('parsed n8n response JSON:', parsedResponse);
-
     const normalizedResult = normalizeN8nPayload(parsedResponse);
 
     if (!normalizedResult) {
@@ -131,7 +122,6 @@ async function requestN8nAnalysis(
       return { ...fallbackAnalysisResult };
     }
 
-    console.log('n8n analysis succeeded');
     return toAnalysisResult(normalizedResult);
   } catch (error) {
     console.warn('n8n analysis failed; using fallback analysis', error);
@@ -152,7 +142,6 @@ function uploadAudiogramToCloudinary(file: Express.Multer.File): Promise<string>
           return;
         }
 
-        console.log('Cloudinary upload succeeded');
         resolve(result.secure_url);
       },
     );
@@ -196,7 +185,6 @@ analysisRouter.post(
         ...analysisResult,
       });
 
-      console.log('analysis saved to MongoDB');
       res.status(201).json(analysis);
     } catch (error) {
       console.error('Upload analysis flow failed', error);

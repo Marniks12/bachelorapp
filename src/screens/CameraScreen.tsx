@@ -82,7 +82,7 @@ export function CameraScreen({ navigation }: CameraScreenProps) {
     }
 
     if (!selectedImage) {
-      setErrorMessage('Selecteer of maak eerst een audiogram-afbeelding.');
+      setErrorMessage('Geen audiogram gekozen. Selecteer of maak eerst een foto.');
       return;
     }
 
@@ -105,9 +105,7 @@ export function CameraScreen({ navigation }: CameraScreenProps) {
       navigation.navigate('Result', { analysis });
     } catch (error) {
       const message = error instanceof Error ? error.message : null;
-      setErrorMessage(
-        message ?? 'Upload of AI-analyse is mislukt. Controleer of de backend draait en probeer opnieuw.',
-      );
+      setErrorMessage(getUploadErrorMessage(message));
 
       if (message?.includes('Sessie verlopen') || message?.includes('Authenticatie vereist')) {
         await logout();
@@ -137,7 +135,7 @@ export function CameraScreen({ navigation }: CameraScreenProps) {
           {isUploading ? (
             <View style={styles.loadingOverlay}>
               <ActivityIndicator color="#ffffff" size="large" />
-              <Text style={styles.loadingText}>AI analyseert...</Text>
+              <Text style={styles.loadingText}>Analyse wordt uitgevoerd...</Text>
             </View>
           ) : null}
         </View>
@@ -177,7 +175,10 @@ export function CameraScreen({ navigation }: CameraScreenProps) {
         disabled={!selectedImage || isUploading}
       >
         {isUploading ? (
-          <ActivityIndicator color="#ffffff" />
+          <View style={styles.loadingRow}>
+            <ActivityIndicator color="#ffffff" />
+            <Text style={styles.buttonText}>Analyse wordt uitgevoerd...</Text>
+          </View>
         ) : (
           <Text style={styles.buttonText}>Analyseer audiogram</Text>
         )}
@@ -321,10 +322,15 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#ffffff',
     fontFamily: 'Open Sans',
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '600',
-    lineHeight: 30,
+    lineHeight: 26,
     textAlign: 'center',
+  },
+  loadingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
   errorText: {
     alignSelf: 'center',
@@ -335,3 +341,23 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
+function getUploadErrorMessage(message: string | null): string {
+  if (!message) {
+    return 'Upload mislukt. Controleer je verbinding en probeer opnieuw.';
+  }
+
+  if (message.includes('Network request failed') || message.includes('Failed to fetch')) {
+    return 'Backend offline. Probeer later opnieuw.';
+  }
+
+  if (message.includes('Sessie verlopen') || message.includes('Authenticatie vereist')) {
+    return 'Sessie verlopen. Log opnieuw in.';
+  }
+
+  if (message.toLowerCase().includes('upload')) {
+    return 'Upload mislukt. Probeer opnieuw.';
+  }
+
+  return message;
+}

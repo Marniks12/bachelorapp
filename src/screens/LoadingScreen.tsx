@@ -12,7 +12,7 @@ export function LoadingScreen(_props: LoadingScreenProps) {
       <Image source={require('../../assets/image 13.png')} style={styles.image} />
 
       <View style={styles.copyGroup}>
-        <Text style={styles.title}>Je audiogram wordt geanalyseerd...</Text>
+        <Text style={styles.title}>Analyse wordt uitgevoerd...</Text>
         <Text style={styles.subtitle}>Dit duurt een paar seconden</Text>
       </View>
 

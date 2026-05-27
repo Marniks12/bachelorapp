@@ -52,7 +52,6 @@ export async function signup(payload: SignupPayload): Promise<AuthResponse> {
   });
 
   const auth = await parseAuthResponse(response);
-  console.log('SIGNUP RESPONSE', auth);
   return auth;
 }
 
@@ -66,7 +65,6 @@ export async function login(payload: LoginPayload): Promise<AuthResponse> {
   });
 
   const auth = await parseAuthResponse(response);
-  console.log('LOGIN RESPONSE', auth);
   return auth;
 }
 

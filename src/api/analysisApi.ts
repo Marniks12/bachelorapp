@@ -22,10 +22,7 @@ export type Analysis = {
 };
 
 export async function getAnalyses(): Promise<Analysis[]> {
-  console.log('API_BASE_URL', API_BASE_URL);
   const token = await getStoredAuthToken();
-
-  console.log('GET ANALYSES TOKEN', token);
 
   if (!token) {
     throw new Error('Authenticatie vereist');
@@ -34,8 +31,6 @@ export async function getAnalyses(): Promise<Analysis[]> {
   const headers = {
     Authorization: `Bearer ${token}`,
   };
-
-  console.log('GET ANALYSES HEADERS', headers);
 
   const response = await fetch(ANALYSES_URL, {
     method: 'GET',
@@ -57,14 +52,8 @@ export type AudiogramUpload = {
 };
 
 export async function uploadAudiogramAnalysis(upload: AudiogramUpload): Promise<Analysis> {
-  console.log('API_BASE_URL', API_BASE_URL);
-  console.log('selected image uri', upload.uri);
-
   const imageResponse = await fetch(upload.uri);
   const blob = await imageResponse.blob();
-
-  console.log('blob type', blob.type);
-  console.log('blob size', blob.size);
 
   const formData = new FormData();
 
@@ -78,9 +67,6 @@ export async function uploadAudiogramAnalysis(upload: AudiogramUpload): Promise<
   });
 
   const responseBody = await response.text();
-
-  console.log('upload response status', response.status);
-  console.log('upload response body', responseBody);
 
   if (!response.ok) {
     if (response.status === 401) {
@@ -118,9 +104,6 @@ export async function checkBackendHealth(): Promise<boolean> {
 
 async function getProtectedHeaders(): Promise<Record<string, string>> {
   const token = await getStoredAuthToken();
-
-  console.log('AUTH TOKEN VALUE BEFORE API CALL', token);
-  console.log('AUTH HEADER WILL BE SENT', Boolean(token));
 
   if (!token) {
     await clearStoredAuth();

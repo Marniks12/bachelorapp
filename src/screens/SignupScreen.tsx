@@ -25,7 +25,7 @@ export function SignupScreen({ navigation }: SignupScreenProps) {
       setErrorMessage(null);
       await signup(name, email, password);
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Registreren is mislukt');
+      setErrorMessage(getAuthErrorMessage(error, 'Registreren is mislukt. Controleer je gegevens.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -85,7 +85,14 @@ export function SignupScreen({ navigation }: SignupScreenProps) {
           onPress={handleSignup}
           disabled={isSubmitting}
         >
-          {isSubmitting ? <ActivityIndicator color="#ffffff" /> : <Text style={styles.buttonText}>Account maken</Text>}
+          {isSubmitting ? (
+            <View style={styles.loadingRow}>
+              <ActivityIndicator color="#ffffff" />
+              <Text style={styles.buttonText}>Account maken...</Text>
+            </View>
+          ) : (
+            <Text style={styles.buttonText}>Account maken</Text>
+          )}
         </Pressable>
 
         <View style={styles.bottomRow}>
@@ -182,6 +189,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     lineHeight: 24,
   },
+  loadingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
   bottomRow: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -197,3 +209,15 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
+
+function getAuthErrorMessage(error: unknown, fallback: string): string {
+  if (!(error instanceof Error)) {
+    return fallback;
+  }
+
+  if (error.message.includes('Network request failed') || error.message.includes('Failed to fetch')) {
+    return 'Backend offline. Probeer later opnieuw.';
+  }
+
+  return error.message || fallback;
+}
