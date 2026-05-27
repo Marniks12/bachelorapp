@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
 export const TOKEN_KEY = 'sonaris_auth_token';
+export const USER_KEY = 'sonaris_user';
 
 function canUseLocalStorage(): boolean {
   return Platform.OS === 'web' && typeof window !== 'undefined' && Boolean(window.localStorage);
@@ -30,8 +31,34 @@ export async function getToken(): Promise<string | null> {
 export async function removeToken(): Promise<void> {
   if (canUseLocalStorage()) {
     window.localStorage.removeItem(TOKEN_KEY);
-    return;
   }
 
   await AsyncStorage.removeItem(TOKEN_KEY);
+}
+
+export async function saveUser(user: unknown): Promise<void> {
+  const userJson = JSON.stringify(user);
+
+  if (canUseLocalStorage()) {
+    window.localStorage.setItem(USER_KEY, userJson);
+    return;
+  }
+
+  await AsyncStorage.setItem(USER_KEY, userJson);
+}
+
+export async function getUser(): Promise<string | null> {
+  if (canUseLocalStorage()) {
+    return window.localStorage.getItem(USER_KEY);
+  }
+
+  return AsyncStorage.getItem(USER_KEY);
+}
+
+export async function removeUser(): Promise<void> {
+  if (canUseLocalStorage()) {
+    window.localStorage.removeItem(USER_KEY);
+  }
+
+  await AsyncStorage.removeItem(USER_KEY);
 }
