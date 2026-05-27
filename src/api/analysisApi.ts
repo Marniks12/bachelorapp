@@ -1,7 +1,6 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
 import { API_BASE_URL } from '../config/api';
-import { TOKEN_KEY, clearStoredAuth } from '../context/AuthContext';
+import { clearStoredAuth } from '../context/AuthContext';
+import { getToken } from '../utils/authStorage';
 
 const ANALYSES_URL = `${API_BASE_URL}/api/analyses`;
 const UPLOAD_ANALYSIS_URL = `${API_BASE_URL}/api/analyses/upload`;
@@ -109,13 +108,13 @@ export async function checkBackendHealth(): Promise<boolean> {
 }
 
 async function getProtectedHeaders(): Promise<Record<string, string>> {
-  const token = await AsyncStorage.getItem(TOKEN_KEY);
+  const token = await getToken();
 
   console.log('AUTH TOKEN VALUE', token);
 
   if (!token) {
     await clearStoredAuth();
-    throw new Error('Authenticatie vereist. Log opnieuw in.');
+    throw new Error('Authenticatie vereist');
   }
 
   return { Authorization: `Bearer ${token}` };
