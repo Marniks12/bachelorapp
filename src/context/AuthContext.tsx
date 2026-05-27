@@ -3,9 +3,8 @@ import { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, 
 
 import { AuthUser, login as loginRequest, signup as signupRequest } from '../api/authApi';
 
-const AUTH_TOKEN_KEY = 'sonaris_token';
+export const TOKEN_KEY = 'sonaris_auth_token';
 const AUTH_USER_KEY = 'sonaris.authUser';
-const LEGACY_AUTH_TOKEN_KEY = 'sonaris.authToken';
 
 let cachedAuthToken: string | null = null;
 
@@ -32,26 +31,19 @@ type AuthProviderProps = {
 };
 
 async function getStoredAuth(): Promise<StoredAuth> {
-  const [token, legacyToken, userJson] = await Promise.all([
-    AsyncStorage.getItem(AUTH_TOKEN_KEY),
-    AsyncStorage.getItem(LEGACY_AUTH_TOKEN_KEY),
+  const [token, userJson] = await Promise.all([
+    AsyncStorage.getItem(TOKEN_KEY),
     AsyncStorage.getItem(AUTH_USER_KEY),
   ]);
-  const storedToken = token ?? legacyToken;
 
-  if (!storedToken || !userJson) {
+  if (!token || !userJson) {
     return { token: null, user: null };
   }
 
   try {
     const user = JSON.parse(userJson) as AuthUser;
 
-    if (!token && legacyToken) {
-      await AsyncStorage.setItem(AUTH_TOKEN_KEY, legacyToken);
-      await AsyncStorage.removeItem(LEGACY_AUTH_TOKEN_KEY);
-    }
-
-    return { token: storedToken, user };
+    return { token, user };
   } catch {
     await clearStoredAuth();
     return { token: null, user: null };
@@ -63,7 +55,7 @@ export async function getAuthToken(): Promise<string | null> {
     return cachedAuthToken;
   }
 
-  cachedAuthToken = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+  cachedAuthToken = await AsyncStorage.getItem(TOKEN_KEY);
   return cachedAuthToken;
 }
 
@@ -71,7 +63,7 @@ async function saveStoredAuth(token: string, user: AuthUser): Promise<void> {
   cachedAuthToken = token;
 
   await Promise.all([
-    AsyncStorage.setItem(AUTH_TOKEN_KEY, token),
+    AsyncStorage.setItem(TOKEN_KEY, token),
     AsyncStorage.setItem(AUTH_USER_KEY, JSON.stringify(user)),
   ]);
 }
@@ -80,8 +72,7 @@ export async function clearStoredAuth(): Promise<void> {
   cachedAuthToken = null;
 
   await Promise.all([
-    AsyncStorage.removeItem(AUTH_TOKEN_KEY),
-    AsyncStorage.removeItem(LEGACY_AUTH_TOKEN_KEY),
+    AsyncStorage.removeItem(TOKEN_KEY),
     AsyncStorage.removeItem(AUTH_USER_KEY),
   ]);
 }
