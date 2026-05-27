@@ -9,7 +9,7 @@ function canUseLocalStorage(): boolean {
 }
 
 export async function saveToken(token: string): Promise<void> {
-  console.log('saved token', token);
+  console.log('TOKEN SAVED', token);
 
   if (canUseLocalStorage()) {
     window.localStorage.setItem(TOKEN_KEY, token);
@@ -24,7 +24,7 @@ export async function getToken(): Promise<string | null> {
     ? window.localStorage.getItem(TOKEN_KEY)
     : await AsyncStorage.getItem(TOKEN_KEY);
 
-  console.log('loaded token', token);
+  console.log('TOKEN LOADED BEFORE API CALL', token);
   return token;
 }
 

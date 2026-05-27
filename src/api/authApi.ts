@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '../config/api';
+const AUTH_API_BASE_URL = 'https://bachelorapp.onrender.com';
 
 export type AuthUser = {
   _id: string;
@@ -26,6 +26,10 @@ async function parseAuthResponse(response: Response): Promise<AuthResponse> {
   const responseBody = await response.text();
 
   if (!response.ok) {
+    if (response.status === 409) {
+      throw new Error('Er bestaat al een account met dit e-mailadres');
+    }
+
     throw new Error(getResponseMessage(responseBody) ?? 'Authenticatie mislukt');
   }
 
@@ -39,7 +43,7 @@ async function parseAuthResponse(response: Response): Promise<AuthResponse> {
 }
 
 export async function signup(payload: SignupPayload): Promise<AuthResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/auth/signup`, {
+  const response = await fetch(`${AUTH_API_BASE_URL}/api/auth/signup`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -47,11 +51,13 @@ export async function signup(payload: SignupPayload): Promise<AuthResponse> {
     body: JSON.stringify(payload),
   });
 
-  return parseAuthResponse(response);
+  const auth = await parseAuthResponse(response);
+  console.log('SIGNUP RESPONSE', auth);
+  return auth;
 }
 
 export async function login(payload: LoginPayload): Promise<AuthResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+  const response = await fetch(`${AUTH_API_BASE_URL}/api/auth/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -59,7 +65,9 @@ export async function login(payload: LoginPayload): Promise<AuthResponse> {
     body: JSON.stringify(payload),
   });
 
-  return parseAuthResponse(response);
+  const auth = await parseAuthResponse(response);
+  console.log('LOGIN RESPONSE', auth);
+  return auth;
 }
 
 function getResponseMessage(responseBody: string): string | null {
