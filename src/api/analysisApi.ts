@@ -24,7 +24,7 @@ export async function getAnalyses(): Promise<Analysis[]> {
   console.log('API_BASE_URL', API_BASE_URL);
 
   const response = await fetch(ANALYSES_URL, {
-    headers: await getAuthHeaders(),
+    headers: await getProtectedHeaders(),
   });
 
   const responseBody = await response.text();
@@ -63,7 +63,7 @@ export async function uploadAudiogramAnalysis(upload: AudiogramUpload): Promise<
 
   const response = await fetch(UPLOAD_ANALYSIS_URL, {
     method: 'POST',
-    headers: await getAuthHeaders(),
+    headers: await getProtectedHeaders(),
     body: formData,
   });
 
@@ -106,10 +106,15 @@ export async function checkBackendHealth(): Promise<boolean> {
   return response.ok;
 }
 
-async function getAuthHeaders(): Promise<Record<string, string>> {
+async function getProtectedHeaders(): Promise<Record<string, string>> {
   const token = await getAuthToken();
 
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  if (!token) {
+    await clearStoredAuth();
+    throw new Error('Authenticatie vereist');
+  }
+
+  return { Authorization: `Bearer ${token}` };
 }
 
 function getResponseMessage(responseBody: string): string | null {

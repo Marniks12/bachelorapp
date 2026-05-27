@@ -109,7 +109,7 @@ export function CameraScreen({ navigation }: CameraScreenProps) {
         message ?? 'Upload of AI-analyse is mislukt. Controleer of de backend draait en probeer opnieuw.',
       );
 
-      if (message?.includes('Sessie verlopen')) {
+      if (message?.includes('Sessie verlopen') || message?.includes('Authenticatie vereist')) {
         await logout();
       }
     } finally {

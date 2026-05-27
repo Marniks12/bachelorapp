@@ -6,6 +6,8 @@ import { AuthUser, login as loginRequest, signup as signupRequest } from '../api
 const AUTH_TOKEN_KEY = 'sonaris.authToken';
 const AUTH_USER_KEY = 'sonaris.authUser';
 
+let cachedAuthToken: string | null = null;
+
 type StoredAuth = {
   token: string | null;
   user: AuthUser | null;
@@ -48,10 +50,17 @@ async function getStoredAuth(): Promise<StoredAuth> {
 }
 
 export async function getAuthToken(): Promise<string | null> {
-  return AsyncStorage.getItem(AUTH_TOKEN_KEY);
+  if (cachedAuthToken) {
+    return cachedAuthToken;
+  }
+
+  cachedAuthToken = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+  return cachedAuthToken;
 }
 
 async function saveStoredAuth(token: string, user: AuthUser): Promise<void> {
+  cachedAuthToken = token;
+
   await Promise.all([
     AsyncStorage.setItem(AUTH_TOKEN_KEY, token),
     AsyncStorage.setItem(AUTH_USER_KEY, JSON.stringify(user)),
@@ -59,6 +68,8 @@ async function saveStoredAuth(token: string, user: AuthUser): Promise<void> {
 }
 
 export async function clearStoredAuth(): Promise<void> {
+  cachedAuthToken = null;
+
   await Promise.all([
     AsyncStorage.removeItem(AUTH_TOKEN_KEY),
     AsyncStorage.removeItem(AUTH_USER_KEY),
@@ -76,6 +87,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     getStoredAuth()
       .then((storedAuth) => {
         if (isMounted) {
+          cachedAuthToken = storedAuth.token;
           setToken(storedAuth.token);
           setUser(storedAuth.user);
         }

@@ -51,7 +51,7 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
       const message = error instanceof Error ? error.message : 'Analyses konden niet geladen worden.';
       setErrorMessage(message);
 
-      if (message.includes('Sessie verlopen')) {
+      if (message.includes('Sessie verlopen') || message.includes('Authenticatie vereist')) {
         await logout();
       }
     } finally {

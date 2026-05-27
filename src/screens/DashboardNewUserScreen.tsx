@@ -24,7 +24,7 @@ export function DashboardNewUserScreen({ navigation }: DashboardNewUserScreenPro
       const message = error instanceof Error ? error.message : 'Analyses konden niet geladen worden.';
       setStatusMessage(message);
 
-      if (message.includes('Sessie verlopen')) {
+      if (message.includes('Sessie verlopen') || message.includes('Authenticatie vereist')) {
         await logout();
       }
     }
