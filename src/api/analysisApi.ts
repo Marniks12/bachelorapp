@@ -40,6 +40,11 @@ export async function getAnalyses(): Promise<Analysis[]> {
   const responseBody = await response.text();
 
   if (!response.ok) {
+    if (response.status === 401) {
+      await clearStoredAuth();
+      throw new Error('Sessie verlopen. Log opnieuw in.');
+    }
+
     throw new Error(getResponseMessage(responseBody) ?? 'Analyses ophalen mislukt');
   }
 
@@ -74,7 +79,7 @@ export async function uploadAudiogramAnalysis(upload: AudiogramUpload): Promise<
       throw new Error('Sessie verlopen. Log opnieuw in.');
     }
 
-    throw new Error(getResponseMessage(responseBody) ?? 'Audiogram uploaden mislukt');
+    throw new Error(getResponseMessage(responseBody) ?? 'Upload mislukt. Probeer opnieuw.');
   }
 
   const analysis = JSON.parse(responseBody) as Partial<Analysis>;
@@ -130,8 +135,26 @@ function getResponseMessage(responseBody: string): string | null {
     const payload = JSON.parse(responseBody) as { message?: unknown; error?: unknown };
     const message = typeof payload.message === 'string' ? payload.message : payload.error;
 
-    return typeof message === 'string' && message.trim() ? message : responseBody;
+    return normalizeApiErrorMessage(typeof message === 'string' && message.trim() ? message : responseBody);
   } catch {
-    return responseBody;
+    return normalizeApiErrorMessage(responseBody);
   }
+}
+
+function normalizeApiErrorMessage(message: string): string {
+  const normalizedMessage = message.toLowerCase();
+
+  if (
+    normalizedMessage.includes('authenticatie') ||
+    normalizedMessage.includes('token') ||
+    normalizedMessage.includes('unauthorized')
+  ) {
+    return 'Sessie verlopen. Log opnieuw in.';
+  }
+
+  if (normalizedMessage.includes('audiogram') || normalizedMessage.includes('upload')) {
+    return 'Upload mislukt. Probeer opnieuw.';
+  }
+
+  return message;
 }

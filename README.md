@@ -2,16 +2,14 @@
 
 Sonaris is een Expo React Native app for uploading audiogram images, running an AI-assisted analysis, and reviewing saved analysis results per authenticated user.
 
-## Live URLs
+## Demo URLs
 
-- Live app: https://sonarisapp.vercel.app
-- Backend API: https://bachelorapp.onrender.com
+- Live app URL: https://sonarisapp.vercel.app
+- Backend URL: https://bachelorapp.onrender.com
 
 ## Test Account
 
-For the demo, create a fresh account in the app via **Signup**. Use a real email format and a password of at least 8 characters.
-
-Suggested demo credentials:
+Use this demo account if it is already created, or create it in the app via **Signup** before the final demo:
 - Email: demo@sonaris.test
 - Password: Demo12345
 

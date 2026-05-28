@@ -161,7 +161,7 @@ export function CameraScreen({ navigation }: CameraScreenProps) {
           <View style={styles.iconCircle}>
             <Image source={require('../../assets/lineicons_gallery.png')} style={styles.galleryIcon} />
           </View>
-          <Text style={styles.actionLabel}>Of uit je gallerij</Text>
+          <Text style={styles.actionLabel}>Of uit je galerij</Text>
         </Pressable>
       </View>
 
@@ -355,7 +355,7 @@ function getUploadErrorMessage(message: string | null): string {
     return 'Sessie verlopen. Log opnieuw in.';
   }
 
-  if (message.toLowerCase().includes('upload')) {
+  if (message.toLowerCase().includes('upload') || message.toLowerCase().includes('audiogram')) {
     return 'Upload mislukt. Probeer opnieuw.';
   }
 

@@ -30,6 +30,10 @@ async function parseAuthResponse(response: Response): Promise<AuthResponse> {
       throw new Error('Er bestaat al een account met dit e-mailadres');
     }
 
+    if (response.status === 401) {
+      throw new Error('Sessie verlopen. Log opnieuw in.');
+    }
+
     throw new Error(getResponseMessage(responseBody) ?? 'Authenticatie mislukt');
   }
 
@@ -77,8 +81,18 @@ function getResponseMessage(responseBody: string): string | null {
     const payload = JSON.parse(responseBody) as { message?: unknown; error?: unknown };
     const message = typeof payload.message === 'string' ? payload.message : payload.error;
 
-    return typeof message === 'string' && message.trim() ? message : responseBody;
+    return normalizeAuthErrorMessage(typeof message === 'string' && message.trim() ? message : responseBody);
   } catch {
-    return responseBody;
+    return normalizeAuthErrorMessage(responseBody);
   }
+}
+
+function normalizeAuthErrorMessage(message: string): string {
+  const normalizedMessage = message.toLowerCase();
+
+  if (normalizedMessage.includes('token') || normalizedMessage.includes('unauthorized')) {
+    return 'Sessie verlopen. Log opnieuw in.';
+  }
+
+  return message;
 }

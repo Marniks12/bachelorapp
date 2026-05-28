@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Analysis, getAnalyses } from '../api/analysisApi';
 import { useAuth } from '../context/AuthContext';
@@ -33,6 +33,16 @@ function formatAnalysisDate(createdAt?: string): string {
     month: 'long',
     year: 'numeric',
   }).format(date);
+}
+
+function formatConfidence(confidence?: string): string {
+  if (!confidence?.trim()) {
+    return 'Betrouwbaarheid onbekend';
+  }
+
+  return confidence.toLowerCase().includes('betrouwbaarheid')
+    ? confidence
+    : `Betrouwbaarheid: ${confidence}`;
 }
 
 export function DashboardScreen({ navigation }: DashboardScreenProps) {
@@ -115,11 +125,15 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
           </View>
         </Pressable>
 
-        <Text style={styles.latestTitle}>Laaste  Analyse</Text>
+        <Text style={styles.latestTitle}>Laatste analyse</Text>
 
         {statusMessage ? (
           <View style={styles.latestCard}>
-            <Image source={require('../../assets/image 17.png')} style={styles.latestThumb} />
+            {isLoadingAnalyses ? (
+              <ActivityIndicator color="#E60F30" style={styles.statusIndicator} />
+            ) : (
+              <Image source={require('../../assets/image 17.png')} style={styles.latestThumb} />
+            )}
             <Text style={styles.latestDate}>{statusMessage}</Text>
           </View>
         ) : null}
@@ -147,7 +161,7 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
                 <Text style={styles.latestDate}>{analysis.patientLabel}</Text>
                 <Text style={styles.latestSeverity}>{analysis.severity}</Text>
                 <Text style={styles.latestCreatedAt}>
-                  {analysis.createdAt} · {analysis.confidence}
+                  {analysis.createdAt} · {formatConfidence(analysis.confidence)}
                 </Text>
                 <Text style={styles.cardArrow}>›</Text>
               </Pressable>
@@ -193,13 +207,13 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
               <Text style={earlierStyles.createdAt}>{analysis.createdAt}</Text>
               <View style={earlierStyles.pill} />
               <Text style={earlierStyles.severity}>{analysis.severity}</Text>
-              <Text style={earlierStyles.confidence}>{analysis.confidence}</Text>
+              <Text style={earlierStyles.confidence}>{formatConfidence(analysis.confidence)}</Text>
               <Text style={earlierStyles.arrow}>›</Text>
             </Pressable>
           );
         })}
 
-        <Text style={styles.earlierTitle}>Eerder analyses</Text>
+        <Text style={styles.earlierTitle}>Eerdere analyses</Text>
         <Pressable onPress={() => navigation.navigate('AnalysisOverview')}>
           <Text style={styles.viewAll}>Bekijk alle</Text>
         </Pressable>
@@ -382,6 +396,11 @@ const styles = StyleSheet.create({
     width: 90,
     height: 90,
     resizeMode: 'contain',
+  },
+  statusIndicator: {
+    position: 'absolute',
+    top: 42,
+    left: 54,
   },
   latestDate: {
     position: 'absolute',

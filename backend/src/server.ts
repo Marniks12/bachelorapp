@@ -24,9 +24,7 @@ app.use('/api/analyses', analysisRouter);
 async function startServer() {
   await connectDb();
 
-  app.listen(port, () => {
-    console.log(`Sonaris backend listening on port ${port}`);
-  });
+  app.listen(port);
 }
 
 startServer().catch((error) => {
