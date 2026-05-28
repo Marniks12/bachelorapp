@@ -31,7 +31,7 @@ If the email already exists, use another email address.
 3. Upload or capture an audiogram image.
 4. Sonaris sends the image to the backend and runs the AI analysis.
 5. The result screen shows severity, PTA, confidence, summary, and recommendation.
-6. Press **Download rapport** to view the new-user dashboard with the latest analysis.
+6. Press **Bekijk in dashboard** to view the new-user dashboard with the latest analysis.
 7. Existing users and refreshed sessions open the normal dashboard.
 
 ## How To Test

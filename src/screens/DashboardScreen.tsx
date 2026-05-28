@@ -9,7 +9,7 @@ import { RootStackParamList } from '../types/navigation';
 type DashboardScreenProps = NativeStackScreenProps<RootStackParamList, 'Dashboard'>;
 type DashboardAnalysisCard = {
   id: string;
-  patientLabel: string;
+  title: string;
   severity: string;
   confidence: string;
   createdAt: string;
@@ -43,6 +43,16 @@ function formatConfidence(confidence?: string): string {
   return confidence.toLowerCase().includes('betrouwbaarheid')
     ? confidence
     : `Betrouwbaarheid: ${confidence}`;
+}
+
+function getAnalysisCardTitle(patientLabel: string | undefined, userName: string | undefined): string {
+  const label = patientLabel?.trim();
+
+  if (label && label.toLowerCase() !== 'emma') {
+    return label;
+  }
+
+  return userName?.trim() || 'Mijn analyse';
 }
 
 export function DashboardScreen({ navigation }: DashboardScreenProps) {
@@ -85,7 +95,7 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
 
   const analysisCards: DashboardAnalysisCard[] = analyses.slice(0, 3).map((analysis) => ({
     id: analysis._id,
-    patientLabel: analysis.patientLabel,
+    title: getAnalysisCardTitle(analysis.patientLabel, user?.name),
     severity: analysis.severity,
     confidence: analysis.confidence,
     createdAt: formatAnalysisDate(analysis.createdAt),
@@ -158,7 +168,7 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
                   source={analysis.imageUrl ? { uri: analysis.imageUrl } : require('../../assets/image 17.png')}
                   style={styles.latestThumb}
                 />
-                <Text style={styles.latestDate}>{analysis.patientLabel}</Text>
+                <Text style={styles.latestDate}>{analysis.title}</Text>
                 <Text style={styles.latestSeverity}>{analysis.severity}</Text>
                 <Text style={styles.latestCreatedAt}>
                   {analysis.createdAt} · {formatConfidence(analysis.confidence)}
@@ -203,7 +213,7 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
                 source={analysis.imageUrl ? { uri: analysis.imageUrl } : require('../../assets/image 17.png')}
                 style={earlierStyles.thumb}
               />
-              <Text style={earlierStyles.patientLabel}>{analysis.patientLabel}</Text>
+              <Text style={earlierStyles.patientLabel}>{analysis.title}</Text>
               <Text style={earlierStyles.createdAt}>{analysis.createdAt}</Text>
               <View style={earlierStyles.pill} />
               <Text style={earlierStyles.severity}>{analysis.severity}</Text>

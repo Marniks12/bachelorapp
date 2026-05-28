@@ -8,6 +8,16 @@ import { RootStackParamList } from '../types/navigation';
 
 type DashboardNewUserScreenProps = NativeStackScreenProps<RootStackParamList, 'DashboardNewUser'>;
 
+function getAnalysisCardTitle(patientLabel: string | undefined, userName: string | undefined): string {
+  const label = patientLabel?.trim();
+
+  if (label && label.toLowerCase() !== 'emma') {
+    return label;
+  }
+
+  return userName?.trim() || 'Mijn analyse';
+}
+
 export function DashboardNewUserScreen({ navigation }: DashboardNewUserScreenProps) {
   const { user, logout } = useAuth();
   const [latestAnalysis, setLatestAnalysis] = useState<Analysis | null>(null);
@@ -67,7 +77,9 @@ export function DashboardNewUserScreen({ navigation }: DashboardNewUserScreenPro
             onPress={() => navigation.navigate('AnalysisDetails', { analysis: latestAnalysis })}
           >
             <Image source={{ uri: latestAnalysis.imageUrl }} style={styles.firstAnalysisThumb} />
-            <Text style={styles.firstAnalysisDate}>{latestAnalysis.patientLabel}</Text>
+            <Text style={styles.firstAnalysisDate}>
+              {getAnalysisCardTitle(latestAnalysis.patientLabel, user?.name)}
+            </Text>
             <Text style={styles.firstAnalysisSeverity}>{latestAnalysis.severity}</Text>
             <Text style={styles.cardArrow}>&gt;</Text>
           </Pressable>

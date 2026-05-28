@@ -173,7 +173,7 @@ analysisRouter.post(
       const patientLabel =
         typeof req.body.patientLabel === 'string' && req.body.patientLabel.trim()
           ? req.body.patientLabel.trim()
-          : 'Emma';
+          : req.user?.name || 'Mijn analyse';
       const imageUrl = await uploadAudiogramToCloudinary(req.file);
       const analysisResult = await requestN8nAnalysis(patientLabel, req.file.originalname, imageUrl);
 

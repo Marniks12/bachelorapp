@@ -11,7 +11,7 @@ import { RootStackParamList } from '../types/navigation';
 type CameraScreenProps = NativeStackScreenProps<RootStackParamList, 'Camera'>;
 
 export function CameraScreen({ navigation }: CameraScreenProps) {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const [selectedImage, setSelectedImage] = useState<ImagePicker.ImagePickerAsset | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -99,7 +99,7 @@ export function CameraScreen({ navigation }: CameraScreenProps) {
 
       const analysis = await uploadAudiogramAnalysis({
         uri: selectedImage.uri,
-        patientLabel: 'Emma',
+        patientLabel: user?.name?.trim() || 'Mijn analyse',
       });
 
       navigation.navigate('Result', { analysis });
