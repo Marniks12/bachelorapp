@@ -1,21 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Analysis, getAnalyses } from '../api/analysisApi';
 import { useAuth } from '../context/AuthContext';
+import { webViewportStyle } from '../styles/responsive';
 import { RootStackParamList } from '../types/navigation';
 
 type DashboardScreenProps = NativeStackScreenProps<RootStackParamList, 'Dashboard'>;
-type DashboardAnalysisCard = {
-  id: string;
-  title: string;
-  severity: string;
-  confidence: string;
-  createdAt: string;
-  imageUrl?: string;
-  analysis?: Analysis;
-};
 
 function formatAnalysisDate(createdAt?: string): string {
   if (!createdAt) {
@@ -48,11 +41,7 @@ function formatConfidence(confidence?: string): string {
 function getAnalysisCardTitle(patientLabel: string | undefined): string {
   const label = patientLabel?.trim();
 
-  if (label) {
-    return label;
-  }
-
-  return 'Mijn analyse';
+  return label || 'Mijn analyse';
 }
 
 export function DashboardScreen({ navigation }: DashboardScreenProps) {
@@ -93,146 +82,133 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
     return unsubscribe;
   }, [loadAnalyses, navigation]);
 
-  const analysisCards: DashboardAnalysisCard[] = analyses.slice(0, 3).map((analysis) => ({
-    id: analysis._id,
-    title: getAnalysisCardTitle(analysis.patientLabel),
-    severity: analysis.severity,
-    confidence: analysis.confidence,
-    createdAt: formatAnalysisDate(analysis.createdAt),
-    imageUrl: analysis.imageUrl,
-    analysis,
-  }));
+  const latestAnalysis = analyses[0];
+  const earlierAnalyses = analyses.slice(1, 3);
   const statusMessage = isLoadingAnalyses ? 'Analyses laden...' : errorMessage;
   const emptyMessage =
-    !statusMessage && analysisCards.length === 0
+    !statusMessage && analyses.length === 0
       ? 'Nog geen analyses gevonden. Start je eerste audiogramanalyse.'
       : null;
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.scrollContent}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={styles.content}>
-        <Text style={styles.greeting} numberOfLines={1}>Hallo {user?.name ?? 'Sonaris'}</Text>
-        <Text style={styles.subtitle}>Welkom terug bij Sonaris</Text>
-        <Pressable
-          style={({ pressed }) => [styles.logoutButton, pressed && styles.logoutButtonPressed]}
-          onPress={handleLogout}
-        >
-          <Text style={styles.logoutText}>Uitloggen</Text>
-        </Pressable>
-
-        <Pressable style={styles.scanCard} onPress={() => navigation.navigate('Camera')}>
-          <Image source={require('../../assets/Rectangle.png')} style={styles.scanIcon} />
-          <Text style={styles.scanTitle}>Nieuwe audiogram scannen</Text>
-          <Text style={styles.scanDescription}>
-            Maak een foto van je audiogram en ontvang je direct analyse voor je patient
-          </Text>
-          <View style={styles.redArrowCircle}>
-            <Text style={styles.whiteArrow}>›</Text>
-          </View>
-        </Pressable>
-
-        <Text style={styles.latestTitle}>Laatste analyse</Text>
-
-        {statusMessage ? (
-          <View style={styles.latestCard}>
-            {isLoadingAnalyses ? (
-              <ActivityIndicator color="#E60F30" style={styles.statusIndicator} />
-            ) : (
-              <Image source={require('../../assets/image 17.png')} style={styles.latestThumb} />
-            )}
-            <Text style={styles.latestDate}>{statusMessage}</Text>
-          </View>
-        ) : null}
-
-        {emptyMessage ? (
-          <View style={styles.latestCard}>
-            <Text style={styles.emptyText}>{emptyMessage}</Text>
-          </View>
-        ) : null}
-
-        {!statusMessage && analysisCards.map((analysis, index) => {
-          if (index === 0) {
-            return (
-              <Pressable
-                key={analysis.id}
-                style={styles.latestCard}
-                onPress={() =>
-                  analysis.analysis && navigation.navigate('AnalysisDetails', { analysis: analysis.analysis })
-                }
-              >
-                <Image
-                  source={analysis.imageUrl ? { uri: analysis.imageUrl } : require('../../assets/image 17.png')}
-                  style={styles.latestThumb}
-                />
-                <Text style={styles.latestDate}>{analysis.title}</Text>
-                <Text style={styles.latestSeverity}>{analysis.severity}</Text>
-                <Text style={styles.latestCreatedAt}>
-                  {analysis.createdAt} · {formatConfidence(analysis.confidence)}
-                </Text>
-                <Text style={styles.cardArrow}>›</Text>
-              </Pressable>
-            );
-          }
-
-          const earlierStyles =
-            index === 1
-              ? {
-                  card: styles.earlierCardOne,
-                  thumb: styles.earlierThumbOne,
-                  patientLabel: styles.earlierDateOne,
-                  pill: styles.pillOne,
-                  severity: styles.pillTextOne,
-                  confidence: styles.earlierConfidenceOne,
-                  arrow: styles.earlierArrowOne,
-                  createdAt: styles.earlierCreatedAtOne,
-                }
-              : {
-                  card: styles.earlierCardTwo,
-                  thumb: styles.earlierThumbTwo,
-                  patientLabel: styles.earlierDateTwo,
-                  pill: styles.pillTwo,
-                  severity: styles.pillTextTwo,
-                  confidence: styles.earlierConfidenceTwo,
-                  arrow: styles.earlierArrowTwo,
-                  createdAt: styles.earlierCreatedAtTwo,
-                };
-
-          return (
+    <SafeAreaView style={[styles.container, webViewportStyle]}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.content}>
+          <View style={styles.header}>
+            <View style={styles.headerCopy}>
+              <Text style={styles.greeting} numberOfLines={1}>
+                Hallo {user?.name ?? 'Sonaris'}
+              </Text>
+              <Text style={styles.subtitle}>Welkom terug bij Sonaris</Text>
+            </View>
             <Pressable
-              key={analysis.id}
-              style={earlierStyles.card}
-              onPress={() =>
-                analysis.analysis && navigation.navigate('AnalysisDetails', { analysis: analysis.analysis })
-              }
+              style={({ pressed }) => [styles.logoutButton, pressed && styles.pressed]}
+              onPress={handleLogout}
             >
-              <Image
-                source={analysis.imageUrl ? { uri: analysis.imageUrl } : require('../../assets/image 17.png')}
-                style={earlierStyles.thumb}
-              />
-              <Text style={earlierStyles.patientLabel}>{analysis.title}</Text>
-              <Text style={earlierStyles.createdAt}>{analysis.createdAt}</Text>
-              <View style={earlierStyles.pill} />
-              <Text style={earlierStyles.severity}>{analysis.severity}</Text>
-              <Text style={earlierStyles.confidence}>{formatConfidence(analysis.confidence)}</Text>
-              <Text style={earlierStyles.arrow}>›</Text>
+              <Text style={styles.logoutText}>Uitloggen</Text>
             </Pressable>
-          );
-        })}
+          </View>
 
-        <Text style={styles.earlierTitle}>Eerdere analyses</Text>
-        <Pressable onPress={() => navigation.navigate('AnalysisOverview')}>
-          <Text style={styles.viewAll}>Bekijk alle</Text>
-        </Pressable>
+          <Pressable style={({ pressed }) => [styles.scanCard, pressed && styles.pressed]} onPress={() => navigation.navigate('Camera')}>
+            <Image source={require('../../assets/Rectangle.png')} style={styles.scanIcon} />
+            <View style={styles.scanCopy}>
+              <Text style={styles.scanTitle}>Nieuwe audiogram scannen</Text>
+              <Text style={styles.scanDescription}>
+                Maak een foto van je audiogram en ontvang je direct analyse voor je patient
+              </Text>
+            </View>
+            <View style={styles.redArrowCircle}>
+              <Text style={styles.whiteArrow}>&gt;</Text>
+            </View>
+          </Pressable>
 
-        <Pressable style={styles.button} onPress={() => navigation.navigate('Camera')}>
-          <Text style={styles.buttonText}>Verdergaan</Text>
-        </Pressable>
+          <Text style={styles.sectionTitle}>Laatste analyse</Text>
+
+          {statusMessage ? (
+            <View style={styles.latestCard}>
+              {isLoadingAnalyses ? <ActivityIndicator color="#E60F30" /> : null}
+              <Text style={styles.statusText}>{statusMessage}</Text>
+            </View>
+          ) : null}
+
+          {emptyMessage ? (
+            <View style={styles.latestCard}>
+              <Text style={styles.statusText}>{emptyMessage}</Text>
+            </View>
+          ) : null}
+
+          {!statusMessage && latestAnalysis ? (
+            <AnalysisCard
+              analysis={latestAnalysis}
+              isLatest
+              onPress={() => navigation.navigate('AnalysisDetails', { analysis: latestAnalysis })}
+            />
+          ) : null}
+
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Eerdere analyses</Text>
+            <Pressable onPress={() => navigation.navigate('AnalysisOverview')}>
+              <Text style={styles.viewAll}>Bekijk alle</Text>
+            </Pressable>
+          </View>
+
+          {earlierAnalyses.map((analysis) => (
+            <AnalysisCard
+              key={analysis._id}
+              analysis={analysis}
+              onPress={() => navigation.navigate('AnalysisDetails', { analysis })}
+            />
+          ))}
+
+          {!statusMessage && earlierAnalyses.length === 0 ? (
+            <Text style={styles.emptyEarlierText}>Geen eerdere analyses.</Text>
+          ) : null}
+
+          <Pressable
+            style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+            onPress={() => navigation.navigate('Camera')}
+          >
+            <Text style={styles.buttonText}>Verdergaan</Text>
+          </Pressable>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+function AnalysisCard({
+  analysis,
+  isLatest,
+  onPress,
+}: {
+  analysis: Analysis;
+  isLatest?: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable style={({ pressed }) => [styles.analysisCard, isLatest && styles.latestAnalysisCard, pressed && styles.pressed]} onPress={onPress}>
+      <Image
+        source={analysis.imageUrl ? { uri: analysis.imageUrl } : require('../../assets/image 17.png')}
+        style={isLatest ? styles.latestThumb : styles.analysisThumb}
+      />
+      <View style={styles.analysisCopy}>
+        <Text style={styles.analysisTitle} numberOfLines={1}>
+          {getAnalysisCardTitle(analysis.patientLabel)}
+        </Text>
+        <Text style={styles.analysisDate}>{formatAnalysisDate(analysis.createdAt)}</Text>
+        <Text style={styles.analysisSeverity} numberOfLines={1}>
+          {analysis.severity}
+        </Text>
+        <Text style={styles.analysisConfidence} numberOfLines={1}>
+          {formatConfidence(analysis.confidence)}
+        </Text>
       </View>
-    </ScrollView>
+      <Text style={styles.cardArrow}>&gt;</Text>
+    </Pressable>
   );
 }
 
@@ -268,27 +244,35 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#111827',
   },
+  scroll: {
+    flex: 1,
+  },
   scrollContent: {
+    flexGrow: 1,
     alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 950,
-    paddingVertical: 16,
+    padding: 16,
+    paddingBottom: Platform.OS === 'web' ? 48 : 24,
   },
   content: {
-    position: 'relative',
-    width: 393,
-    minHeight: 950,
+    width: '100%',
+    maxWidth: 420,
+    padding: 22,
     backgroundColor: '#ffffff',
     borderColor: '#E5E7EB',
     borderRadius: 30,
     borderWidth: 1,
-    overflow: 'hidden',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginBottom: 22,
+  },
+  headerCopy: {
+    flex: 1,
   },
   greeting: {
-    position: 'absolute',
-    top: 90,
-    left: 49,
-    width: 190,
     color: '#000000',
     fontFamily: 'Anek Tamil',
     fontSize: 24,
@@ -296,78 +280,55 @@ const styles = StyleSheet.create({
     lineHeight: 32,
   },
   subtitle: {
-    position: 'absolute',
-    top: 127,
-    left: 49,
-    width: 225,
     color: 'rgba(0,0,0,0.72)',
     fontSize: 15,
     lineHeight: 20,
   },
   logoutButton: {
-    position: 'absolute',
-    top: 22,
-    right: 22,
-    zIndex: 20,
-    minWidth: 120,
-    minHeight: 44,
+    minHeight: 42,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 18,
-    paddingVertical: 10,
+    paddingHorizontal: 14,
     backgroundColor: '#0F2A44',
-    borderColor: '#0F2A44',
     borderRadius: 10,
-    borderWidth: 1,
-    elevation: 10,
-  },
-  logoutButtonPressed: {
-    opacity: 0.82,
   },
   logoutText: {
     color: '#ffffff',
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
-    lineHeight: 20,
+    lineHeight: 18,
   },
   scanCard: {
-    position: 'absolute',
-    top: 151,
-    left: 23,
-    width: 356,
-    height: 140,
+    width: '100%',
+    minHeight: 132,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 24,
+    padding: 14,
     backgroundColor: '#FEF0F1',
     borderRadius: 19,
   },
   scanIcon: {
-    position: 'absolute',
-    top: 23,
-    left: 5,
     width: 52,
     height: 52,
     resizeMode: 'contain',
   },
+  scanCopy: {
+    flex: 1,
+  },
   scanTitle: {
-    position: 'absolute',
-    top: 29,
-    left: 55,
     color: '#000000',
     fontSize: 20,
     lineHeight: 26,
   },
   scanDescription: {
-    position: 'absolute',
-    top: 60,
-    left: 57,
-    width: 225,
+    marginTop: 4,
     color: '#000000',
     fontSize: 15,
     lineHeight: 20,
   },
   redArrowCircle: {
-    position: 'absolute',
-    top: 49,
-    left: 315,
     width: 28,
     height: 28,
     alignItems: 'center',
@@ -377,244 +338,133 @@ const styles = StyleSheet.create({
   },
   whiteArrow: {
     color: '#ffffff',
-    fontSize: 28,
+    fontSize: 18,
     fontWeight: '600',
-    lineHeight: 29,
+    lineHeight: 20,
   },
-  latestTitle: {
-    position: 'absolute',
-    top: 304,
-    left: 28,
+  sectionTitle: {
     color: '#000000',
     fontSize: 15,
     lineHeight: 20,
   },
   latestCard: {
-    position: 'absolute',
-    top: 341,
-    left: 23,
-    width: 329,
-    height: 111,
+    width: '100%',
+    minHeight: 108,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    marginTop: 12,
+    marginBottom: 24,
+    padding: 18,
     backgroundColor: '#D9D9D9',
     borderRadius: 23,
     ...cardShadow,
   },
-  latestThumb: {
-    position: 'absolute',
-    top: 14,
-    left: 18,
-    width: 90,
-    height: 90,
-    resizeMode: 'contain',
-  },
-  statusIndicator: {
-    position: 'absolute',
-    top: 42,
-    left: 54,
-  },
-  latestDate: {
-    position: 'absolute',
-    top: 22,
-    left: 129,
-    color: '#000000',
-    fontSize: 15,
-    lineHeight: 20,
-  },
-  emptyText: {
-    position: 'absolute',
-    top: 42,
-    left: 24,
-    right: 24,
+  statusText: {
     color: '#000000',
     fontSize: 15,
     lineHeight: 20,
     textAlign: 'center',
   },
-  latestSeverity: {
-    position: 'absolute',
-    top: 50,
-    left: 129,
+  analysisCard: {
+    width: '100%',
+    minHeight: 88,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    marginTop: 12,
+    padding: 14,
+    backgroundColor: '#D9D9D9',
+    borderRadius: 23,
+    ...cardShadow,
+  },
+  latestAnalysisCard: {
+    minHeight: 116,
+    marginBottom: 24,
+  },
+  analysisThumb: {
+    width: 56,
+    height: 57,
+    resizeMode: 'contain',
+  },
+  latestThumb: {
+    width: 90,
+    height: 90,
+    resizeMode: 'contain',
+  },
+  analysisCopy: {
+    flex: 1,
+    minWidth: 0,
+  },
+  analysisTitle: {
     color: '#000000',
     fontSize: 15,
     lineHeight: 20,
   },
-  latestCreatedAt: {
-    position: 'absolute',
-    top: 76,
-    left: 129,
-    right: 38,
-    color: '#000000',
-    fontSize: 13,
-    lineHeight: 18,
+  analysisDate: {
+    marginTop: 2,
+    color: '#475569',
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  analysisSeverity: {
+    alignSelf: 'flex-start',
+    maxWidth: '100%',
+    marginTop: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 2,
+    color: '#ffffff',
+    backgroundColor: '#F62222',
+    borderRadius: 6,
+    fontSize: 12,
+    lineHeight: 16,
+    overflow: 'hidden',
+  },
+  analysisConfidence: {
+    marginTop: 4,
+    color: '#475569',
+    fontSize: 11,
+    lineHeight: 14,
   },
   cardArrow: {
-    position: 'absolute',
-    top: 28,
-    left: 294,
     color: '#000000',
-    fontSize: 34,
-    lineHeight: 36,
+    fontSize: 24,
+    lineHeight: 30,
   },
-  earlierTitle: {
-    position: 'absolute',
-    top: 531,
-    left: 31,
-    color: '#000000',
-    fontSize: 15,
-    lineHeight: 20,
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 12,
   },
   viewAll: {
-    position: 'absolute',
-    top: 531,
-    left: 265,
     color: '#F62222',
     fontSize: 15,
     lineHeight: 20,
   },
-  earlierCardOne: {
-    position: 'absolute',
-    top: 582,
-    left: 23,
-    width: 329,
-    height: 79,
-    backgroundColor: '#D9D9D9',
-    borderRadius: 23,
-    ...cardShadow,
-  },
-  earlierCardTwo: {
-    position: 'absolute',
-    top: 691,
-    left: 23,
-    width: 329,
-    height: 79,
-    backgroundColor: '#D9D9D9',
-    borderRadius: 23,
-    ...cardShadow,
-  },
-  earlierThumbOne: {
-    position: 'absolute',
-    top: 14,
-    left: 18,
-    width: 56,
-    height: 57,
-    resizeMode: 'contain',
-  },
-  earlierThumbTwo: {
-    position: 'absolute',
-    top: 14,
-    left: 18,
-    width: 56,
-    height: 57,
-    resizeMode: 'contain',
-  },
-  earlierDateOne: {
-    position: 'absolute',
-    top: 10,
-    left: 129,
-    color: '#000000',
-    fontSize: 15,
-    lineHeight: 20,
-  },
-  earlierDateTwo: {
-    position: 'absolute',
-    top: 10,
-    left: 129,
-    color: '#000000',
-    fontSize: 15,
-    lineHeight: 20,
-  },
-  earlierCreatedAtOne: {
-    position: 'absolute',
-    top: 29,
-    left: 129,
-    color: '#000000',
-    fontSize: 12,
-    lineHeight: 16,
-  },
-  earlierCreatedAtTwo: {
-    position: 'absolute',
-    top: 29,
-    left: 129,
-    color: '#000000',
-    fontSize: 12,
-    lineHeight: 16,
-  },
-  pillOne: {
-    position: 'absolute',
-    top: 50,
-    left: 125,
-    width: 138,
-    height: 15,
-    backgroundColor: '#F62222',
-    borderRadius: 6,
-  },
-  pillTwo: {
-    position: 'absolute',
-    top: 50,
-    left: 129,
-    width: 138,
-    height: 15,
-    backgroundColor: '#F62222',
-    borderRadius: 6,
-  },
-  pillTextOne: {
-    position: 'absolute',
-    top: 49,
-    left: 144,
-    color: '#D9D9D9',
-    fontSize: 12,
-    lineHeight: 16,
-  },
-  pillTextTwo: {
-    position: 'absolute',
-    top: 49,
-    left: 148,
-    color: '#D9D9D9',
-    fontSize: 12,
-    lineHeight: 16,
-  },
-  earlierConfidenceOne: {
-    position: 'absolute',
-    top: 65,
-    left: 129,
+  emptyEarlierText: {
+    marginTop: 12,
     color: '#475569',
-    fontSize: 11,
-    lineHeight: 14,
-  },
-  earlierConfidenceTwo: {
-    position: 'absolute',
-    top: 65,
-    left: 129,
-    color: '#475569',
-    fontSize: 11,
-    lineHeight: 14,
-  },
-  earlierArrowOne: {
-    position: 'absolute',
-    top: 24,
-    left: 294,
-    color: '#000000',
-    fontSize: 34,
-    lineHeight: 36,
-  },
-  earlierArrowTwo: {
-    position: 'absolute',
-    top: 24,
-    left: 294,
-    color: '#000000',
-    fontSize: 34,
-    lineHeight: 36,
+    fontSize: 14,
+    lineHeight: 18,
   },
   button: {
-    position: 'absolute',
-    top: 857,
-    left: 69,
-    width: 255,
-    height: 68.66,
+    width: '100%',
+    maxWidth: 255,
+    minHeight: 60,
+    alignSelf: 'center',
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 32,
     backgroundColor: '#F62222',
     borderRadius: 999,
+  },
+  buttonPressed: {
+    opacity: 0.84,
+  },
+  pressed: {
+    opacity: 0.72,
   },
   buttonText: {
     color: '#ffffff',

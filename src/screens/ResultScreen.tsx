@@ -270,8 +270,9 @@ const styles = StyleSheet.create({
   },
   chart: {
     alignSelf: 'center',
-    width: 319,
-    height: 256,
+    width: '100%',
+    maxWidth: 319,
+    aspectRatio: 319 / 256,
     marginTop: 28,
     marginBottom: 24,
     resizeMode: 'contain',
@@ -309,7 +310,7 @@ const styles = StyleSheet.create({
     textAlign: 'left',
   },
   description: {
-    maxWidth: 280,
+    width: '100%',
     marginBottom: 12,
     color: '#000000',
     fontFamily: 'Barlow Condensed',
@@ -328,7 +329,7 @@ const styles = StyleSheet.create({
     textAlign: 'left',
   },
   disclaimer: {
-    maxWidth: 280,
+    width: '100%',
     marginBottom: 18,
     color: 'rgba(0,0,0,0.68)',
     fontFamily: 'Barlow Condensed',
@@ -357,8 +358,9 @@ const styles = StyleSheet.create({
   },
   downloadButton: {
     alignSelf: 'center',
-    width: 255,
-    height: 60,
+    width: '100%',
+    maxWidth: 255,
+    minHeight: 60,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 'auto',

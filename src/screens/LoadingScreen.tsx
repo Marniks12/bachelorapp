@@ -29,8 +29,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   image: {
-    width: 312,
-    height: 322,
+    width: '100%',
+    maxWidth: 312,
+    aspectRatio: 312 / 322,
     marginBottom: 36,
     resizeMode: 'contain',
   },

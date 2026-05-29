@@ -65,8 +65,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   button: {
-    width: 220,
-    height: 54,
+    width: '100%',
+    maxWidth: 220,
+    minHeight: 54,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 24,

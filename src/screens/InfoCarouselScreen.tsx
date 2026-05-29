@@ -23,8 +23,8 @@ type Slide = {
   description: string;
   image: ImageSourcePropType;
   imageStyle: {
-    width: number;
-    height: number;
+    maxWidth: number;
+    aspectRatio: number;
   };
 };
 
@@ -42,8 +42,8 @@ const slides: Slide[] = [
       'Maak een foto van je audiogram en krijg meteen een duidelijke analyse van je gehoor.',
     image: require('../../assets/image 15.png'),
     imageStyle: {
-      width: 246,
-      height: 213,
+      maxWidth: 246,
+      aspectRatio: 246 / 213,
     },
   },
   {
@@ -51,8 +51,8 @@ const slides: Slide[] = [
     description: 'Onze technologie herkent automatisch frequenties en waarden uit je audiogram.',
     image: require('../../assets/image 10.png'),
     imageStyle: {
-      width: 212,
-      height: 222,
+      maxWidth: 212,
+      aspectRatio: 212 / 222,
     },
   },
   {
@@ -60,8 +60,8 @@ const slides: Slide[] = [
     description: 'Ontvang een begrijpelijke uitleg van je gehoorverlies en download een rapport.',
     image: require('../../assets/image 11.png'),
     imageStyle: {
-      width: 202,
-      height: 229,
+      maxWidth: 202,
+      aspectRatio: 202 / 229,
     },
   },
   {
@@ -69,8 +69,8 @@ const slides: Slide[] = [
     description: 'Je gegevens worden lokaal verwerkt en niet opgeslagen.',
     image: require('../../assets/image 12.png'),
     imageStyle: {
-      width: 170,
-      height: 181,
+      maxWidth: 170,
+      aspectRatio: 170 / 181,
     },
   },
 ];
@@ -185,7 +185,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   carouselCard: {
-    width: 295,
+    width: '100%',
+    maxWidth: 310,
     minHeight: 528,
     alignItems: 'center',
     justifyContent: 'center',
@@ -196,12 +197,14 @@ const styles = StyleSheet.create({
     borderWidth: 5,
   },
   imageFrame: {
+    width: '100%',
     height: 230,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 24,
   },
   slideImage: {
+    width: '100%',
     resizeMode: 'contain',
   },
   title: {
@@ -240,8 +243,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#D9D9D9',
   },
   button: {
-    width: 255,
-    height: 60,
+    width: '100%',
+    maxWidth: 255,
+    minHeight: 60,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#F62222',

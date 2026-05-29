@@ -1,3 +1,4 @@
+
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -44,8 +45,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   image: {
-    width: 230,
-    height: 263,
+    width: '72%',
+    maxWidth: 230,
+    aspectRatio: 230 / 263,
     marginBottom: 64,
     resizeMode: 'contain',
   },
@@ -79,8 +81,9 @@ const styles = StyleSheet.create({
     opacity: 0.62,
   },
   button: {
-    width: 255,
-    height: 60,
+    width: '100%',
+    maxWidth: 255,
+    minHeight: 60,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#F62222',

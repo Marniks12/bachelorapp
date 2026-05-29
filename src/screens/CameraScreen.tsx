@@ -214,7 +214,7 @@ export function CameraScreen({ navigation }: CameraScreenProps) {
 
 const styles = StyleSheet.create({
   card: {
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
   },
   header: {
     height: 48,
@@ -258,6 +258,7 @@ const styles = StyleSheet.create({
   previewImage: {
     width: '100%',
     height: '100%',
+    maxHeight: 360,
     borderRadius: 10,
     resizeMode: 'cover',
   },
@@ -342,8 +343,9 @@ const styles = StyleSheet.create({
   },
   button: {
     alignSelf: 'center',
-    width: 255,
-    height: 60,
+    width: '100%',
+    maxWidth: 255,
+    minHeight: 60,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#F62222',

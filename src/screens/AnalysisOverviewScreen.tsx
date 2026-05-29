@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Analysis, getAnalyses } from '../api/analysisApi';
 import { useAuth } from '../context/AuthContext';
+import { webViewportStyle } from '../styles/responsive';
 import { RootStackParamList } from '../types/navigation';
 
 type AnalysisOverviewScreenProps = NativeStackScreenProps<RootStackParamList, 'AnalysisOverview'>;
@@ -57,41 +59,48 @@ export function AnalysisOverviewScreen({ navigation }: AnalysisOverviewScreenPro
   }, [loadAnalyses, navigation]);
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.scrollContent}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={styles.content}>
-        <Pressable style={styles.closeButton} onPress={() => navigation.navigate('Dashboard')}>
-          <Text style={styles.closeText}>X</Text>
-        </Pressable>
+    <SafeAreaView style={[styles.container, webViewportStyle]}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.content}>
+          <View style={styles.header}>
+            <Text style={styles.title}>Al jouw analyses</Text>
+            <Pressable style={styles.closeButton} onPress={() => navigation.navigate('Dashboard')}>
+              <Text style={styles.closeText}>X</Text>
+            </Pressable>
+          </View>
 
-        <Text style={styles.title}>AL jou analyses</Text>
+          {statusMessage ? <Text style={styles.statusText}>{statusMessage}</Text> : null}
 
-        {statusMessage ? <Text style={styles.statusText}>{statusMessage}</Text> : null}
+          {analyses.map((analysis) => (
+            <Pressable
+              key={analysis._id}
+              style={({ pressed }) => [styles.card, pressed && styles.pressed]}
+              onPress={() => navigation.navigate('AnalysisDetails', { analysis })}
+            >
+              <Image source={{ uri: analysis.imageUrl }} style={styles.thumbnail} />
+              <View style={styles.cardCopy}>
+                <Text style={styles.date}>{formatAnalysisDate(analysis.createdAt)}</Text>
+                <Text style={styles.pillText} numberOfLines={1}>
+                  {analysis.severity}
+                </Text>
+              </View>
+              <Text style={styles.arrow}>&gt;</Text>
+            </Pressable>
+          ))}
 
-        {analyses.map((analysis, index) => (
           <Pressable
-            key={analysis._id}
-            style={[styles.card, { top: 160 + index * 109 }]}
-            onPress={() => navigation.navigate('AnalysisDetails', { analysis })}
+            style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+            onPress={() => navigation.navigate('Dashboard')}
           >
-            <Image source={{ uri: analysis.imageUrl }} style={styles.thumbnail} />
-            <Text style={styles.date}>{formatAnalysisDate(analysis.createdAt)}</Text>
-            <View style={styles.pill} />
-            <Text style={styles.pillText}>
-              {analysis.severity}
-            </Text>
-            <Text style={styles.arrow}>&gt;</Text>
+            <Text style={styles.buttonText}>Verdergaan</Text>
           </Pressable>
-        ))}
-
-        <Pressable style={styles.button} onPress={() => navigation.navigate('Dashboard')}>
-          <Text style={styles.buttonText}>Verdergaan</Text>
-        </Pressable>
-      </View>
-    </ScrollView>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -111,22 +120,34 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#111827',
   },
+  scroll: {
+    flex: 1,
+  },
   scrollContent: {
+    flexGrow: 1,
     alignItems: 'center',
-    backgroundColor: '#111827',
+    padding: 16,
+    paddingBottom: Platform.OS === 'web' ? 48 : 24,
   },
   content: {
-    position: 'relative',
-    width: 393,
-    height: 950,
+    width: '100%',
+    maxWidth: 420,
+    padding: 22,
     backgroundColor: '#ffffff',
+    borderColor: '#E5E7EB',
+    borderRadius: 30,
+    borderWidth: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginBottom: 28,
   },
   closeButton: {
-    position: 'absolute',
-    left: 345,
-    top: 36,
-    width: 28,
-    height: 28,
+    width: 36,
+    height: 36,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -137,85 +158,79 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   title: {
-    position: 'absolute',
-    left: 23,
-    top: 84,
     color: '#000000',
     fontFamily: 'Anek Tamil',
-    fontSize: 15,
-    fontWeight: '400',
-    lineHeight: 20,
+    fontSize: 18,
+    fontWeight: '600',
+    lineHeight: 24,
   },
   statusText: {
-    position: 'absolute',
-    left: 23,
-    right: 23,
-    top: 160,
+    marginBottom: 16,
     color: '#000000',
     fontSize: 15,
     lineHeight: 20,
     textAlign: 'center',
   },
   card: {
-    position: 'absolute',
-    left: 23,
-    width: 329,
-    height: 79,
+    width: '100%',
+    minHeight: 84,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    marginBottom: 14,
+    padding: 14,
     backgroundColor: '#D9D9D9',
     borderRadius: 23,
     ...cardShadow,
   },
   thumbnail: {
-    position: 'absolute',
-    left: 18,
-    top: 11,
     width: 56,
     height: 57,
     resizeMode: 'contain',
   },
+  cardCopy: {
+    flex: 1,
+    minWidth: 0,
+  },
   date: {
-    position: 'absolute',
-    left: 129,
-    top: 14,
     color: '#000000',
     fontSize: 15,
     lineHeight: 20,
   },
-  pill: {
-    position: 'absolute',
-    left: 125,
-    top: 40,
-    width: 138,
-    height: 15,
+  pillText: {
+    alignSelf: 'flex-start',
+    maxWidth: '100%',
+    marginTop: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 2,
+    color: '#ffffff',
     backgroundColor: '#F62222',
     borderRadius: 6,
-  },
-  pillText: {
-    position: 'absolute',
-    left: 144,
-    top: 39,
-    color: '#ffffff',
     fontSize: 12,
     lineHeight: 16,
+    overflow: 'hidden',
   },
   arrow: {
-    position: 'absolute',
-    left: 294,
-    top: 24,
     color: '#000000',
     fontSize: 24,
     lineHeight: 30,
   },
   button: {
-    position: 'absolute',
-    left: 69,
-    top: 857,
-    width: 255,
-    height: 68.66,
+    width: '100%',
+    maxWidth: 255,
+    minHeight: 60,
+    alignSelf: 'center',
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 18,
     backgroundColor: '#F62222',
     borderRadius: 999,
+  },
+  buttonPressed: {
+    opacity: 0.84,
+  },
+  pressed: {
+    opacity: 0.72,
   },
   buttonText: {
     color: '#ffffff',

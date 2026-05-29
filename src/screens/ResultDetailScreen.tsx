@@ -1,5 +1,5 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { PhoneCard } from '../components/PhoneCard';
 import { RootStackParamList } from '../types/navigation';
@@ -34,10 +34,7 @@ export function ResultDetailScreen({
 
   return (
     <PhoneCard contentStyle={styles.card}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
+      <View style={styles.scrollContent}>
         <Text style={styles.title}>AI analyse</Text>
 
         <Image source={{ uri: analysis.imageUrl }} style={styles.chart} />
@@ -90,7 +87,7 @@ export function ResultDetailScreen({
             <Image source={require('../../assets/chevron_up.png')} style={styles.chevronIcon} />
           </Pressable>
         </View>
-      </ScrollView>
+      </View>
     </PhoneCard>
   );
 }
@@ -112,8 +109,9 @@ const styles = StyleSheet.create({
     lineHeight: 40,
   },
   chart: {
-    width: 319,
-    height: 256,
+    width: '100%',
+    maxWidth: 319,
+    aspectRatio: 319 / 256,
     marginTop: 20,
     marginBottom: 20,
     resizeMode: 'contain',
@@ -221,8 +219,9 @@ const styles = StyleSheet.create({
     marginTop: 26,
   },
   downloadButton: {
-    width: 255,
-    height: 60,
+    width: '100%',
+    maxWidth: 255,
+    minHeight: 60,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#E60F30',

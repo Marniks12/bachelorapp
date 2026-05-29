@@ -1,8 +1,20 @@
 import { useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAuth } from '../context/AuthContext';
+import { webViewportStyle } from '../styles/responsive';
 import { RootStackParamList } from '../types/navigation';
 
 type LoginScreenProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
@@ -31,67 +43,73 @@ export function LoginScreen({ navigation }: LoginScreenProps) {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <View style={styles.card}>
-        <View style={styles.logo}>
-          <Text style={styles.logoText}>)))</Text>
-        </View>
-
-        <Text style={styles.title}>Welkom terug</Text>
-        <Text style={styles.subtitle}>Log in om je audiogram analyses te bekijken.</Text>
-
-        <TextInput
-          style={styles.input}
-          placeholder="E-mailadres"
-          placeholderTextColor="#64748B"
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoComplete="email"
-          value={email}
-          onChangeText={setEmail}
-        />
-
-        <TextInput
-          style={styles.input}
-          placeholder="Wachtwoord"
-          placeholderTextColor="#64748B"
-          secureTextEntry
-          autoComplete="password"
-          value={password}
-          onChangeText={setPassword}
-        />
-
-        {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
-
-        <Pressable
-          style={({ pressed }) => [
-            styles.button,
-            pressed && styles.buttonPressed,
-            isSubmitting && styles.buttonDisabled,
-          ]}
-          onPress={handleLogin}
-          disabled={isSubmitting}
+    <KeyboardAvoidingView style={[styles.container, webViewportStyle]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          {isSubmitting ? (
-            <View style={styles.loadingRow}>
-              <ActivityIndicator color="#ffffff" />
-              <Text style={styles.buttonText}>Inloggen...</Text>
+          <View style={styles.card}>
+            <View style={styles.logo}>
+              <Text style={styles.logoText}>)))</Text>
             </View>
-          ) : (
-            <Text style={styles.buttonText}>Inloggen</Text>
-          )}
-        </Pressable>
 
-        <View style={styles.bottomRow}>
-          <Text style={styles.bottomText}>Nog geen account? </Text>
-          <Pressable onPress={() => navigation.navigate('Signup')}>
-            <Text style={styles.linkText}>Maak er een aan</Text>
-          </Pressable>
-        </View>
-      </View>
+            <Text style={styles.title}>Welkom terug</Text>
+            <Text style={styles.subtitle}>Log in om je audiogram analyses te bekijken.</Text>
+
+            <TextInput
+              style={styles.input}
+              placeholder="E-mailadres"
+              placeholderTextColor="#64748B"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoComplete="email"
+              value={email}
+              onChangeText={setEmail}
+            />
+
+            <TextInput
+              style={styles.input}
+              placeholder="Wachtwoord"
+              placeholderTextColor="#64748B"
+              secureTextEntry
+              autoComplete="password"
+              value={password}
+              onChangeText={setPassword}
+            />
+
+            {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+
+            <Pressable
+              style={({ pressed }) => [
+                styles.button,
+                pressed && styles.buttonPressed,
+                isSubmitting && styles.buttonDisabled,
+              ]}
+              onPress={handleLogin}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <View style={styles.loadingRow}>
+                  <ActivityIndicator color="#ffffff" />
+                  <Text style={styles.buttonText}>Inloggen...</Text>
+                </View>
+              ) : (
+                <Text style={styles.buttonText}>Inloggen</Text>
+              )}
+            </Pressable>
+
+            <View style={styles.bottomRow}>
+              <Text style={styles.bottomText}>Nog geen account? </Text>
+              <Pressable onPress={() => navigation.navigate('Signup')}>
+                <Text style={styles.linkText}>Maak er een aan</Text>
+              </Pressable>
+            </View>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
     </KeyboardAvoidingView>
   );
 }
@@ -99,10 +117,20 @@ export function LoginScreen({ navigation }: LoginScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#F8FAFC',
+  },
+  safeArea: {
+    flex: 1,
+  },
+  scroll: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
-    backgroundColor: '#F8FAFC',
+    paddingBottom: Platform.OS === 'web' ? 48 : 24,
   },
   card: {
     width: '100%',
