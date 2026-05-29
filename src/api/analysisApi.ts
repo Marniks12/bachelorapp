@@ -48,7 +48,7 @@ export async function getAnalyses(): Promise<Analysis[]> {
     throw new Error(getResponseMessage(responseBody) ?? 'Analyses ophalen mislukt');
   }
 
-  return JSON.parse(responseBody) as Analysis[];
+  return sortAnalysesByNewest(JSON.parse(responseBody) as Analysis[]);
 }
 
 export type AudiogramUpload = {
@@ -157,4 +157,18 @@ function normalizeApiErrorMessage(message: string): string {
   }
 
   return message;
+}
+
+function sortAnalysesByNewest(analyses: Analysis[]): Analysis[] {
+  return [...analyses].sort((left, right) => {
+    const rightCreatedAt = new Date(right.createdAt).getTime();
+    const leftCreatedAt = new Date(left.createdAt).getTime();
+    const createdAtDifference = rightCreatedAt - leftCreatedAt;
+
+    if (createdAtDifference !== 0) {
+      return createdAtDifference;
+    }
+
+    return right._id.localeCompare(left._id);
+  });
 }

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as ImagePicker from 'expo-image-picker';
-import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { uploadAudiogramAnalysis } from '../api/analysisApi';
 import { PhoneCard } from '../components/PhoneCard';
@@ -13,6 +13,7 @@ type CameraScreenProps = NativeStackScreenProps<RootStackParamList, 'Camera'>;
 export function CameraScreen({ navigation }: CameraScreenProps) {
   const { logout, user } = useAuth();
   const [selectedImage, setSelectedImage] = useState<ImagePicker.ImagePickerAsset | null>(null);
+  const [patientLabel, setPatientLabel] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -90,6 +91,13 @@ export function CameraScreen({ navigation }: CameraScreenProps) {
       setIsUploading(true);
       setErrorMessage(null);
 
+      const trimmedPatientLabel = patientLabel.trim();
+
+      if (!trimmedPatientLabel) {
+        setErrorMessage('Vul een patientlabel in voor deze analyse.');
+        return;
+      }
+
       const mimeType = selectedImage.mimeType ?? 'image/jpeg';
 
       if (!mimeType.startsWith('image/')) {
@@ -99,7 +107,7 @@ export function CameraScreen({ navigation }: CameraScreenProps) {
 
       const analysis = await uploadAudiogramAnalysis({
         uri: selectedImage.uri,
-        patientLabel: user?.name?.trim() || 'Mijn analyse',
+        patientLabel: trimmedPatientLabel,
       });
 
       navigation.navigate('Result', { analysis });
@@ -141,6 +149,21 @@ export function CameraScreen({ navigation }: CameraScreenProps) {
         </View>
       </View>
 
+      <View style={styles.patientLabelField}>
+        <Text style={styles.inputLabel}>Patientlabel</Text>
+        <TextInput
+          style={styles.patientLabelInput}
+          value={patientLabel}
+          onChangeText={setPatientLabel}
+          placeholder={user?.name ? `Bijv. ${user.name}` : 'Bijv. patient 1'}
+          placeholderTextColor="#64748B"
+          autoCapitalize="words"
+          editable={!isUploading}
+          maxLength={80}
+          returnKeyType="done"
+        />
+      </View>
+
       <View style={styles.actions}>
         <Pressable
           style={({ pressed }) => [styles.actionItem, pressed && styles.controlPressed]}
@@ -168,11 +191,11 @@ export function CameraScreen({ navigation }: CameraScreenProps) {
       <Pressable
         style={({ pressed }) => [
           styles.button,
-          (!selectedImage || isUploading) && styles.buttonDisabled,
+          (!selectedImage || !patientLabel.trim() || isUploading) && styles.buttonDisabled,
           pressed && styles.buttonPressed,
         ]}
         onPress={handleUploadAnalysis}
-        disabled={!selectedImage || isUploading}
+        disabled={!selectedImage || !patientLabel.trim() || isUploading}
       >
         {isUploading ? (
           <View style={styles.loadingRow}>
@@ -261,7 +284,30 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'flex-start',
-    marginVertical: 24,
+    marginVertical: 18,
+  },
+  patientLabelField: {
+    width: '100%',
+    marginTop: 16,
+  },
+  inputLabel: {
+    marginBottom: 6,
+    color: '#0F172A',
+    fontSize: 14,
+    fontWeight: '700',
+    lineHeight: 18,
+  },
+  patientLabelInput: {
+    width: '100%',
+    minHeight: 48,
+    paddingHorizontal: 14,
+    color: '#0F172A',
+    backgroundColor: '#F8FAFC',
+    borderColor: '#CBD5E1',
+    borderRadius: 12,
+    borderWidth: 1,
+    fontSize: 16,
+    lineHeight: 22,
   },
   actionItem: {
     width: 118,

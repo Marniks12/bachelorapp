@@ -45,14 +45,14 @@ function formatConfidence(confidence?: string): string {
     : `Betrouwbaarheid: ${confidence}`;
 }
 
-function getAnalysisCardTitle(patientLabel: string | undefined, userName: string | undefined): string {
+function getAnalysisCardTitle(patientLabel: string | undefined): string {
   const label = patientLabel?.trim();
 
-  if (label && label.toLowerCase() !== 'emma') {
+  if (label) {
     return label;
   }
 
-  return userName?.trim() || 'Mijn analyse';
+  return 'Mijn analyse';
 }
 
 export function DashboardScreen({ navigation }: DashboardScreenProps) {
@@ -95,7 +95,7 @@ export function DashboardScreen({ navigation }: DashboardScreenProps) {
 
   const analysisCards: DashboardAnalysisCard[] = analyses.slice(0, 3).map((analysis) => ({
     id: analysis._id,
-    title: getAnalysisCardTitle(analysis.patientLabel, user?.name),
+    title: getAnalysisCardTitle(analysis.patientLabel),
     severity: analysis.severity,
     confidence: analysis.confidence,
     createdAt: formatAnalysisDate(analysis.createdAt),

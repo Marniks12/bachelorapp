@@ -173,7 +173,13 @@ analysisRouter.post(
       const patientLabel =
         typeof req.body.patientLabel === 'string' && req.body.patientLabel.trim()
           ? req.body.patientLabel.trim()
-          : req.user?.name || 'Mijn analyse';
+          : null;
+
+      if (!patientLabel) {
+        res.status(400).json({ message: 'patientLabel is required' });
+        return;
+      }
+
       const imageUrl = await uploadAudiogramToCloudinary(req.file);
       const analysisResult = await requestN8nAnalysis(patientLabel, req.file.originalname, imageUrl);
 
@@ -193,40 +199,9 @@ analysisRouter.post(
   },
 );
 
-analysisRouter.post('/', requireAuth, async (req, res, next) => {
-  try {
-    const { patientLabel, imageName } = req.body as {
-      patientLabel?: string;
-      imageName?: string;
-    };
-
-    if (!patientLabel || !imageName) {
-      res.status(400).json({ message: 'patientLabel and imageName are required' });
-      return;
-    }
-
-    const analysis = await Analysis.create({
-      userId: req.user!._id,
-      patientLabel,
-      imageName,
-      success: true,
-      severity: 'Ernstige hoorverlies',
-      pta: 67,
-      confidence: 'hoog',
-      summary: 'Demo-analyse op basis van het opgegeven audiogram.',
-      recommendation: 'Verdere evaluatie door audioloog of NKO-arts aanbevolen.',
-      disclaimer: 'Deze analyse is een demo en geen medische diagnose.',
-    });
-
-    res.status(201).json(analysis);
-  } catch (error) {
-    next(error);
-  }
-});
-
 analysisRouter.get('/', requireAuth, async (req, res, next) => {
   try {
-    const analyses = await Analysis.find({ userId: req.user!._id }).sort({ createdAt: -1 });
+    const analyses = await Analysis.find({ userId: req.user!._id }).sort({ createdAt: -1, _id: -1 });
     res.json(analyses);
   } catch (error) {
     next(error);

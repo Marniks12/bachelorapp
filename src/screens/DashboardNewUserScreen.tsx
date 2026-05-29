@@ -8,14 +8,14 @@ import { RootStackParamList } from '../types/navigation';
 
 type DashboardNewUserScreenProps = NativeStackScreenProps<RootStackParamList, 'DashboardNewUser'>;
 
-function getAnalysisCardTitle(patientLabel: string | undefined, userName: string | undefined): string {
+function getAnalysisCardTitle(patientLabel: string | undefined): string {
   const label = patientLabel?.trim();
 
-  if (label && label.toLowerCase() !== 'emma') {
+  if (label) {
     return label;
   }
 
-  return userName?.trim() || 'Mijn analyse';
+  return 'Mijn analyse';
 }
 
 export function DashboardNewUserScreen({ navigation }: DashboardNewUserScreenProps) {
@@ -78,7 +78,7 @@ export function DashboardNewUserScreen({ navigation }: DashboardNewUserScreenPro
           >
             <Image source={{ uri: latestAnalysis.imageUrl }} style={styles.firstAnalysisThumb} />
             <Text style={styles.firstAnalysisDate}>
-              {getAnalysisCardTitle(latestAnalysis.patientLabel, user?.name)}
+              {getAnalysisCardTitle(latestAnalysis.patientLabel)}
             </Text>
             <Text style={styles.firstAnalysisSeverity}>{latestAnalysis.severity}</Text>
             <Text style={styles.cardArrow}>&gt;</Text>
