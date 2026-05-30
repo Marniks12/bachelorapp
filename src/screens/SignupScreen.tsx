@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import {
   ActivityIndicator,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -53,9 +54,7 @@ export function SignupScreen({ navigation }: SignupScreenProps) {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.card}>
-            <View style={styles.logo}>
-              <Text style={styles.logoText}>)))</Text>
-            </View>
+            <Image source={require('../../assets/logo.png')} style={styles.logo} />
 
             <Text style={styles.title}>Maak je Sonaris account</Text>
             <Text style={styles.subtitle}>Bewaar analyses veilig en bekijk alleen je eigen resultaten.</Text>
@@ -127,7 +126,7 @@ export function SignupScreen({ navigation }: SignupScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#FEF0F1',
   },
   safeArea: {
     flex: 1,
@@ -145,77 +144,86 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     maxWidth: 393,
-    padding: 28,
-    backgroundColor: '#ffffff',
-    borderColor: '#E2E8F0',
-    borderRadius: 24,
-    borderWidth: 1,
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 34,
   },
   logo: {
-    width: 72,
-    height: 72,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 24,
-    backgroundColor: '#0F2A44',
-    borderRadius: 36,
-  },
-  logoText: {
-    color: '#ffffff',
-    fontSize: 24,
-    fontWeight: '700',
-    lineHeight: 28,
+    width: 86,
+    height: 86,
+    marginBottom: 30,
+    resizeMode: 'contain',
   },
   title: {
-    color: '#0F172A',
+    width: '100%',
+    color: '#000000',
+    fontFamily: 'Anek Tamil',
     fontSize: 28,
-    fontWeight: '700',
-    lineHeight: 34,
+    fontWeight: '400',
+    lineHeight: 36,
+    textAlign: 'center',
   },
   subtitle: {
     marginTop: 8,
-    marginBottom: 28,
-    color: '#475569',
+    marginBottom: 32,
+    color: '#000000',
+    fontFamily: 'Anek Tamil',
     fontSize: 16,
     lineHeight: 22,
+    textAlign: 'center',
   },
   input: {
     width: '100%',
     height: 56,
-    marginBottom: 14,
+    marginBottom: 16,
     paddingHorizontal: 16,
-    backgroundColor: '#F8FAFC',
-    borderColor: '#CBD5E1',
+    backgroundColor: '#FFF7F7',
+    borderColor: '#000000',
     borderRadius: 14,
     borderWidth: 1,
-    color: '#0F172A',
+    color: '#000000',
     fontSize: 16,
   },
   errorText: {
+    width: '100%',
     marginBottom: 14,
     color: '#DC2626',
     fontSize: 14,
     lineHeight: 20,
   },
   button: {
-    height: 56,
+    width: '100%',
+    maxWidth: 255,
+    minHeight: 60,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 6,
-    backgroundColor: '#0F2A44',
+    marginTop: 12,
+    backgroundColor: '#F62222',
     borderRadius: 999,
+    shadowColor: '#F62222',
+    shadowOffset: {
+      width: 0,
+      height: 10,
+    },
+    shadowOpacity: 0.22,
+    shadowRadius: 16,
+    elevation: 5,
   },
   buttonPressed: {
-    opacity: 0.86,
+    opacity: 0.84,
   },
   buttonDisabled: {
-    backgroundColor: '#94A3B8',
+    backgroundColor: '#FCA5A5',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   buttonText: {
     color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '700',
-    lineHeight: 24,
+    fontFamily: 'Open Sans',
+    fontSize: 24,
+    fontWeight: '600',
+    lineHeight: 30,
+    textAlign: 'center',
   },
   loadingRow: {
     flexDirection: 'row',
@@ -228,11 +236,11 @@ const styles = StyleSheet.create({
     marginTop: 22,
   },
   bottomText: {
-    color: '#475569',
+    color: '#000000',
     fontSize: 15,
   },
   linkText: {
-    color: '#0F2A44',
+    color: '#F62222',
     fontSize: 15,
     fontWeight: '700',
   },
