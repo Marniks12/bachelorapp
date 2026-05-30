@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Analysis, getAnalyses } from '../api/analysisApi';
 import { useAuth } from '../context/AuthContext';
 import { webViewportStyle } from '../styles/responsive';
+import { fontFamilies } from '../styles/typography';
 import { RootStackParamList } from '../types/navigation';
 
 type AnalysisOverviewScreenProps = NativeStackScreenProps<RootStackParamList, 'AnalysisOverview'>;
@@ -153,13 +154,14 @@ const styles = StyleSheet.create({
   },
   closeText: {
     color: '#000000',
+    fontFamily: fontFamilies.bodySemiBold,
     fontSize: 18,
     fontWeight: '600',
     lineHeight: 22,
   },
   title: {
     color: '#000000',
-    fontFamily: 'Anek Tamil',
+    fontFamily: fontFamilies.headingSemiBold,
     fontSize: 18,
     fontWeight: '600',
     lineHeight: 24,
@@ -167,6 +169,7 @@ const styles = StyleSheet.create({
   statusText: {
     marginBottom: 16,
     color: '#000000',
+    fontFamily: fontFamilies.body,
     fontSize: 15,
     lineHeight: 20,
     textAlign: 'center',
@@ -194,6 +197,7 @@ const styles = StyleSheet.create({
   },
   date: {
     color: '#000000',
+    fontFamily: fontFamilies.body,
     fontSize: 15,
     lineHeight: 20,
   },
@@ -204,6 +208,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 2,
     color: '#ffffff',
+    fontFamily: fontFamilies.bodyMedium,
     backgroundColor: '#F62222',
     borderRadius: 6,
     fontSize: 12,
@@ -212,6 +217,7 @@ const styles = StyleSheet.create({
   },
   arrow: {
     color: '#000000',
+    fontFamily: fontFamilies.body,
     fontSize: 24,
     lineHeight: 30,
   },
@@ -234,6 +240,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#ffffff',
+    fontFamily: fontFamilies.bodySemiBold,
     fontSize: 24,
     fontWeight: '600',
     lineHeight: 30,

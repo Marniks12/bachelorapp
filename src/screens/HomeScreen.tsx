@@ -3,6 +3,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { PhoneCard } from '../components/PhoneCard';
+import { fontFamilies } from '../styles/typography';
 import { RootStackParamList } from '../types/navigation';
 
 type HomeScreenProps = NativeStackScreenProps<RootStackParamList, 'Home'>;
@@ -60,6 +61,7 @@ const styles = StyleSheet.create({
     maxWidth: 296,
     marginBottom: 22,
     color: '#000000',
+    fontFamily: fontFamilies.body,
     fontSize: 20,
     fontWeight: '300',
     lineHeight: 29,
@@ -67,6 +69,7 @@ const styles = StyleSheet.create({
   },
   link: {
     color: '#000000',
+    fontFamily: fontFamilies.body,
     fontSize: 20,
     fontWeight: '300',
     lineHeight: 28,
@@ -102,6 +105,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#ffffff',
+    fontFamily: fontFamilies.bodySemiBold,
     fontSize: 24,
     fontWeight: '600',
     lineHeight: 30,

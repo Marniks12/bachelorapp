@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 
 import { PhoneCard } from '../components/PhoneCard';
+import { fontFamilies } from '../styles/typography';
 import { RootStackParamList } from '../types/navigation';
 
 type InfoCarouselScreenProps = NativeStackScreenProps<RootStackParamList, 'InfoCarousel'>;
@@ -210,7 +211,7 @@ const styles = StyleSheet.create({
   title: {
     marginBottom: 16,
     color: '#000000',
-    fontFamily: 'Anek Tamil',
+    fontFamily: fontFamilies.headingBold,
     fontSize: 20,
     fontWeight: '700',
     lineHeight: 27,
@@ -219,7 +220,7 @@ const styles = StyleSheet.create({
   description: {
     maxWidth: 260,
     color: '#000000',
-    fontFamily: 'Barlow Condensed',
+    fontFamily: fontFamilies.body,
     fontSize: 20,
     fontWeight: '300',
     lineHeight: 26,
@@ -264,7 +265,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#ffffff',
-    fontFamily: 'Open Sans',
+    fontFamily: fontFamilies.bodySemiBold,
     fontSize: 24,
     fontWeight: '600',
     lineHeight: 30,

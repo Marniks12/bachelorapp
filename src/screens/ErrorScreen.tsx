@@ -2,6 +2,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { PhoneCard } from '../components/PhoneCard';
+import { fontFamilies } from '../styles/typography';
 import { RootStackParamList } from '../types/navigation';
 
 type ErrorScreenProps = NativeStackScreenProps<RootStackParamList, 'Error'>;
@@ -42,6 +43,7 @@ const styles = StyleSheet.create({
   },
   iconText: {
     color: '#E60F30',
+    fontFamily: fontFamilies.headingBold,
     fontSize: 42,
     fontWeight: '700',
     lineHeight: 48,
@@ -49,7 +51,7 @@ const styles = StyleSheet.create({
   title: {
     marginBottom: 12,
     color: '#000000',
-    fontFamily: 'Anek Tamil',
+    fontFamily: fontFamilies.heading,
     fontSize: 28,
     fontWeight: '400',
     lineHeight: 36,
@@ -59,6 +61,7 @@ const styles = StyleSheet.create({
     maxWidth: 300,
     marginBottom: 34,
     color: '#000000',
+    fontFamily: fontFamilies.body,
     fontSize: 18,
     lineHeight: 25,
     textAlign: 'center',
@@ -85,7 +88,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#ffffff',
-    fontFamily: 'Open Sans',
+    fontFamily: fontFamilies.bodySemiBold,
     fontSize: 22,
     fontWeight: '600',
     lineHeight: 28,

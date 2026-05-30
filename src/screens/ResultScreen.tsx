@@ -4,6 +4,7 @@ import { Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native
 
 import { Analysis } from '../api/analysisApi';
 import { PhoneCard } from '../components/PhoneCard';
+import { fontFamilies } from '../styles/typography';
 import { RootStackParamList } from '../types/navigation';
 
 type ResultScreenProps = NativeStackScreenProps<RootStackParamList, 'Result'>;
@@ -47,38 +48,39 @@ async function downloadAnalysisReport(analysis: Analysis): Promise<void> {
 
   const { jsPDF } = await import('jspdf');
   const report = new jsPDF({ unit: 'mm', format: 'a4' });
+  const customFontsLoaded = await registerReportFonts(report);
   const margin = 18;
   const contentWidth = 174;
   let cursorY = 22;
 
-  report.setFont('helvetica', 'bold');
+  setReportFont(report, customFontsLoaded, 'heading');
   report.setFontSize(24);
   report.text('Sonaris', margin, cursorY);
   cursorY += 8;
 
-  report.setFont('helvetica', 'normal');
+  setReportFont(report, customFontsLoaded, 'body');
   report.setFontSize(11);
   report.setTextColor(80, 80, 80);
   report.text('Audiogram analyse rapport', margin, cursorY);
   cursorY += 14;
 
   report.setTextColor(0, 0, 0);
-  cursorY = addReportLine(report, 'Patientlabel', analysis.patientLabel, cursorY, margin, contentWidth);
-  cursorY = addReportLine(report, 'Ernst', analysis.severity, cursorY, margin, contentWidth);
-  cursorY = addReportLine(report, 'PTA', `${analysis.pta} dB`, cursorY, margin, contentWidth);
-  cursorY = addReportLine(report, 'Betrouwbaarheid', analysis.confidence, cursorY, margin, contentWidth);
-  cursorY = addReportLine(report, 'Analyse datum', formatReportDate(analysis.createdAt), cursorY, margin, contentWidth);
+  cursorY = addReportLine(report, customFontsLoaded, 'Patientlabel', analysis.patientLabel, cursorY, margin, contentWidth);
+  cursorY = addReportLine(report, customFontsLoaded, 'Ernst', analysis.severity, cursorY, margin, contentWidth);
+  cursorY = addReportLine(report, customFontsLoaded, 'PTA', `${analysis.pta} dB`, cursorY, margin, contentWidth);
+  cursorY = addReportLine(report, customFontsLoaded, 'Betrouwbaarheid', analysis.confidence, cursorY, margin, contentWidth);
+  cursorY = addReportLine(report, customFontsLoaded, 'Analyse datum', formatReportDate(analysis.createdAt), cursorY, margin, contentWidth);
   cursorY += 4;
 
-  cursorY = addReportSection(report, 'Samenvatting', analysis.summary, cursorY, margin, contentWidth);
-  cursorY = addReportSection(report, 'Aanbeveling', analysis.recommendation, cursorY, margin, contentWidth);
-  cursorY = addReportSection(report, 'Disclaimer', analysis.disclaimer, cursorY, margin, contentWidth);
+  cursorY = addReportSection(report, customFontsLoaded, 'Samenvatting', analysis.summary, cursorY, margin, contentWidth);
+  cursorY = addReportSection(report, customFontsLoaded, 'Aanbeveling', analysis.recommendation, cursorY, margin, contentWidth);
+  cursorY = addReportSection(report, customFontsLoaded, 'Disclaimer', analysis.disclaimer, cursorY, margin, contentWidth);
 
   if (analysis.imageUrl) {
     const imageDataUrl = await getImageDataUrl(analysis.imageUrl);
 
     cursorY = ensurePageSpace(report, cursorY, 76, margin);
-    report.setFont('helvetica', 'bold');
+    setReportFont(report, customFontsLoaded, 'heading');
     report.setFontSize(13);
     report.text('Audiogram', margin, cursorY);
     cursorY += 6;
@@ -90,6 +92,7 @@ async function downloadAnalysisReport(analysis: Analysis): Promise<void> {
 
 function addReportLine(
   report: import('jspdf').jsPDF,
+  customFontsLoaded: boolean,
   label: string,
   value: string,
   cursorY: number,
@@ -98,10 +101,10 @@ function addReportLine(
 ): number {
   const nextY = ensurePageSpace(report, cursorY, 12, margin);
 
-  report.setFont('helvetica', 'bold');
+  setReportFont(report, customFontsLoaded, 'bodyBold');
   report.setFontSize(11);
   report.text(`${label}:`, margin, nextY);
-  report.setFont('helvetica', 'normal');
+  setReportFont(report, customFontsLoaded, 'body');
   report.text(report.splitTextToSize(value || 'Onbekend', contentWidth - 42), margin + 42, nextY);
 
   return nextY + 8;
@@ -109,6 +112,7 @@ function addReportLine(
 
 function addReportSection(
   report: import('jspdf').jsPDF,
+  customFontsLoaded: boolean,
   title: string,
   value: string,
   cursorY: number,
@@ -118,10 +122,10 @@ function addReportSection(
   const lines = report.splitTextToSize(value || 'Niet beschikbaar', contentWidth);
   const nextY = ensurePageSpace(report, cursorY, 10 + lines.length * 5, margin);
 
-  report.setFont('helvetica', 'bold');
+  setReportFont(report, customFontsLoaded, 'heading');
   report.setFontSize(13);
   report.text(title, margin, nextY);
-  report.setFont('helvetica', 'normal');
+  setReportFont(report, customFontsLoaded, 'body');
   report.setFontSize(11);
   report.text(lines, margin, nextY + 7);
 
@@ -135,6 +139,64 @@ function ensurePageSpace(report: import('jspdf').jsPDF, cursorY: number, neededH
 
   report.addPage();
   return margin;
+}
+
+async function registerReportFonts(report: import('jspdf').jsPDF): Promise<boolean> {
+  try {
+    const [anekTamil, barlowRegular, barlowBold] = await Promise.all([
+      getAssetBase64(require('../../assets/fonts/AnekTamil-Regular.ttf')),
+      getAssetBase64(require('../../assets/fonts/BarlowCondensed-Regular.ttf')),
+      getAssetBase64(require('../../assets/fonts/BarlowCondensed-Bold.ttf')),
+    ]);
+
+    report.addFileToVFS('AnekTamil-Regular.ttf', anekTamil);
+    report.addFont('AnekTamil-Regular.ttf', 'AnekTamil', 'normal');
+    report.addFileToVFS('BarlowCondensed-Regular.ttf', barlowRegular);
+    report.addFont('BarlowCondensed-Regular.ttf', 'BarlowCondensed', 'normal');
+    report.addFileToVFS('BarlowCondensed-Bold.ttf', barlowBold);
+    report.addFont('BarlowCondensed-Bold.ttf', 'BarlowCondensed', 'bold');
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function getAssetBase64(asset: unknown): Promise<string> {
+  const assetSource = Image.resolveAssetSource(asset as number);
+
+  if (!assetSource?.uri) {
+    throw new Error('Font asset kon niet worden geladen.');
+  }
+
+  const response = await fetch(assetSource.uri);
+  const buffer = await response.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+
+  for (let index = 0; index < bytes.length; index += 0x8000) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + 0x8000));
+  }
+
+  return btoa(binary);
+}
+
+function setReportFont(
+  report: import('jspdf').jsPDF,
+  customFontsLoaded: boolean,
+  variant: 'heading' | 'body' | 'bodyBold',
+): void {
+  if (!customFontsLoaded) {
+    report.setFont('helvetica', variant === 'body' ? 'normal' : 'bold');
+    return;
+  }
+
+  if (variant === 'heading') {
+    report.setFont('AnekTamil', 'normal');
+    return;
+  }
+
+  report.setFont('BarlowCondensed', variant === 'bodyBold' ? 'bold' : 'normal');
 }
 
 async function getImageDataUrl(imageUrl: string): Promise<string> {
@@ -262,7 +324,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#000000',
-    fontFamily: 'Anek Tamil',
+    fontFamily: fontFamilies.headingBold,
     fontSize: 34,
     fontWeight: '700',
     lineHeight: 42,
@@ -295,7 +357,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: '#ffffff',
-    fontFamily: 'Open Sans',
+    fontFamily: fontFamilies.bodyBold,
     fontSize: 14,
     fontWeight: '700',
     lineHeight: 18,
@@ -303,7 +365,7 @@ const styles = StyleSheet.create({
   confidenceText: {
     marginBottom: 10,
     color: '#475569',
-    fontFamily: 'Barlow Condensed',
+    fontFamily: fontFamilies.bodyMedium,
     fontSize: 18,
     fontWeight: '500',
     lineHeight: 24,
@@ -313,7 +375,7 @@ const styles = StyleSheet.create({
     width: '100%',
     marginBottom: 12,
     color: '#000000',
-    fontFamily: 'Barlow Condensed',
+    fontFamily: fontFamilies.body,
     fontSize: 20,
     fontWeight: '300',
     lineHeight: 26,
@@ -322,7 +384,7 @@ const styles = StyleSheet.create({
   ptaText: {
     marginBottom: 10,
     color: '#000000',
-    fontFamily: 'Barlow Condensed',
+    fontFamily: fontFamilies.bodyMedium,
     fontSize: 20,
     fontWeight: '500',
     lineHeight: 26,
@@ -332,7 +394,7 @@ const styles = StyleSheet.create({
     width: '100%',
     marginBottom: 18,
     color: 'rgba(0,0,0,0.68)',
-    fontFamily: 'Barlow Condensed',
+    fontFamily: fontFamilies.body,
     fontSize: 16,
     fontWeight: '300',
     lineHeight: 22,
@@ -350,7 +412,7 @@ const styles = StyleSheet.create({
   },
   readMoreText: {
     color: '#161A1D',
-    fontFamily: 'Barlow Condensed',
+    fontFamily: fontFamilies.body,
     fontSize: 20,
     fontWeight: '300',
     lineHeight: 24,
@@ -385,7 +447,7 @@ const styles = StyleSheet.create({
   },
   downloadText: {
     color: '#ffffff',
-    fontFamily: 'Open Sans',
+    fontFamily: fontFamilies.bodySemiBold,
     fontSize: 18,
     fontWeight: '600',
     lineHeight: 24,
@@ -395,6 +457,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginTop: 10,
     color: '#E60F30',
+    fontFamily: fontFamilies.body,
     fontSize: 14,
     lineHeight: 18,
     textAlign: 'center',

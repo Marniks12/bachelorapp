@@ -6,6 +6,7 @@ import { ActivityIndicator, Image, Pressable, StyleSheet, Text, TextInput, View 
 import { InvalidAudiogramError, INVALID_AUDIOGRAM_MESSAGE, uploadAudiogramAnalysis } from '../api/analysisApi';
 import { PhoneCard } from '../components/PhoneCard';
 import { useAuth } from '../context/AuthContext';
+import { fontFamilies } from '../styles/typography';
 import { RootStackParamList } from '../types/navigation';
 
 type CameraScreenProps = NativeStackScreenProps<RootStackParamList, 'Camera'>;
@@ -282,6 +283,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     color: '#ffffff',
+    fontFamily: fontFamilies.bodySemiBold,
     fontSize: 16,
     fontWeight: '600',
     lineHeight: 22,
@@ -300,6 +302,7 @@ const styles = StyleSheet.create({
   inputLabel: {
     marginBottom: 6,
     color: '#0F172A',
+    fontFamily: fontFamilies.bodyBold,
     fontSize: 14,
     fontWeight: '700',
     lineHeight: 18,
@@ -309,6 +312,7 @@ const styles = StyleSheet.create({
     minHeight: 48,
     paddingHorizontal: 14,
     color: '#0F172A',
+    fontFamily: fontFamilies.body,
     backgroundColor: '#F8FAFC',
     borderColor: '#CBD5E1',
     borderRadius: 12,
@@ -341,7 +345,7 @@ const styles = StyleSheet.create({
   },
   actionLabel: {
     color: '#000000',
-    fontFamily: 'Barlow Condensed',
+    fontFamily: fontFamilies.bodyMedium,
     fontSize: 20,
     fontWeight: '500',
     lineHeight: 26,
@@ -375,7 +379,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#ffffff',
-    fontFamily: 'Open Sans',
+    fontFamily: fontFamilies.bodySemiBold,
     fontSize: 20,
     fontWeight: '600',
     lineHeight: 26,
@@ -390,6 +394,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginTop: 12,
     color: '#E60F30',
+    fontFamily: fontFamilies.body,
     fontSize: 14,
     lineHeight: 18,
     textAlign: 'center',

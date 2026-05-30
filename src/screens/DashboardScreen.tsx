@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Analysis, getAnalyses } from '../api/analysisApi';
 import { useAuth } from '../context/AuthContext';
 import { webViewportStyle } from '../styles/responsive';
+import { fontFamilies } from '../styles/typography';
 import { RootStackParamList } from '../types/navigation';
 
 type DashboardScreenProps = NativeStackScreenProps<RootStackParamList, 'Dashboard'>;
@@ -274,13 +275,14 @@ const styles = StyleSheet.create({
   },
   greeting: {
     color: '#000000',
-    fontFamily: 'Anek Tamil',
+    fontFamily: fontFamilies.heading,
     fontSize: 24,
     fontWeight: '400',
     lineHeight: 32,
   },
   subtitle: {
     color: 'rgba(0,0,0,0.72)',
+    fontFamily: fontFamilies.body,
     fontSize: 15,
     lineHeight: 20,
   },
@@ -294,6 +296,7 @@ const styles = StyleSheet.create({
   },
   logoutText: {
     color: '#ffffff',
+    fontFamily: fontFamilies.bodyBold,
     fontSize: 14,
     fontWeight: '700',
     lineHeight: 18,
@@ -319,12 +322,14 @@ const styles = StyleSheet.create({
   },
   scanTitle: {
     color: '#000000',
+    fontFamily: fontFamilies.bodyMedium,
     fontSize: 20,
     lineHeight: 26,
   },
   scanDescription: {
     marginTop: 4,
     color: '#000000',
+    fontFamily: fontFamilies.body,
     fontSize: 15,
     lineHeight: 20,
   },
@@ -338,12 +343,14 @@ const styles = StyleSheet.create({
   },
   whiteArrow: {
     color: '#ffffff',
+    fontFamily: fontFamilies.bodySemiBold,
     fontSize: 18,
     fontWeight: '600',
     lineHeight: 20,
   },
   sectionTitle: {
     color: '#000000',
+    fontFamily: fontFamilies.body,
     fontSize: 15,
     lineHeight: 20,
   },
@@ -362,6 +369,7 @@ const styles = StyleSheet.create({
   },
   statusText: {
     color: '#000000',
+    fontFamily: fontFamilies.body,
     fontSize: 15,
     lineHeight: 20,
     textAlign: 'center',
@@ -398,12 +406,14 @@ const styles = StyleSheet.create({
   },
   analysisTitle: {
     color: '#000000',
+    fontFamily: fontFamilies.body,
     fontSize: 15,
     lineHeight: 20,
   },
   analysisDate: {
     marginTop: 2,
     color: '#475569',
+    fontFamily: fontFamilies.body,
     fontSize: 12,
     lineHeight: 16,
   },
@@ -414,6 +424,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 2,
     color: '#ffffff',
+    fontFamily: fontFamilies.bodyMedium,
     backgroundColor: '#F62222',
     borderRadius: 6,
     fontSize: 12,
@@ -423,11 +434,13 @@ const styles = StyleSheet.create({
   analysisConfidence: {
     marginTop: 4,
     color: '#475569',
+    fontFamily: fontFamilies.body,
     fontSize: 11,
     lineHeight: 14,
   },
   cardArrow: {
     color: '#000000',
+    fontFamily: fontFamilies.body,
     fontSize: 24,
     lineHeight: 30,
   },
@@ -440,12 +453,14 @@ const styles = StyleSheet.create({
   },
   viewAll: {
     color: '#F62222',
+    fontFamily: fontFamilies.body,
     fontSize: 15,
     lineHeight: 20,
   },
   emptyEarlierText: {
     marginTop: 12,
     color: '#475569',
+    fontFamily: fontFamilies.body,
     fontSize: 14,
     lineHeight: 18,
   },
@@ -468,6 +483,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#ffffff',
+    fontFamily: fontFamilies.bodySemiBold,
     fontSize: 24,
     fontWeight: '600',
     lineHeight: 30,

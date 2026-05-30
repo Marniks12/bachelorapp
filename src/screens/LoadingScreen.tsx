@@ -2,6 +2,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ActivityIndicator, Image, StyleSheet, Text, View } from 'react-native';
 
 import { PhoneCard } from '../components/PhoneCard';
+import { fontFamilies } from '../styles/typography';
 import { RootStackParamList } from '../types/navigation';
 
 type LoadingScreenProps = NativeStackScreenProps<RootStackParamList, 'Loading'>;
@@ -44,7 +45,7 @@ const styles = StyleSheet.create({
     maxWidth: 280,
     marginBottom: 14,
     color: '#000000',
-    fontFamily: 'Barlow Condensed',
+    fontFamily: fontFamilies.heading,
     fontSize: 32,
     fontWeight: '300',
     lineHeight: 36,
@@ -52,7 +53,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     color: '#000000',
-    fontFamily: 'Barlow Condensed',
+    fontFamily: fontFamilies.body,
     fontSize: 20,
     fontWeight: '300',
     lineHeight: 24,

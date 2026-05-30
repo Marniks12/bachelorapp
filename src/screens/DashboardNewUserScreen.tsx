@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Analysis, getAnalyses } from '../api/analysisApi';
 import { useAuth } from '../context/AuthContext';
 import { webViewportStyle } from '../styles/responsive';
+import { fontFamilies } from '../styles/typography';
 import { RootStackParamList } from '../types/navigation';
 
 type DashboardNewUserScreenProps = NativeStackScreenProps<RootStackParamList, 'DashboardNewUser'>;
@@ -141,7 +142,7 @@ const styles = StyleSheet.create({
   },
   greeting: {
     color: '#000000',
-    fontFamily: 'Anek Tamil',
+    fontFamily: fontFamilies.heading,
     fontSize: 24,
     fontWeight: '400',
     lineHeight: 32,
@@ -149,7 +150,7 @@ const styles = StyleSheet.create({
   subtitle: {
     marginBottom: 22,
     color: 'rgba(0,0,0,0.72)',
-    fontFamily: 'Anek Tamil',
+    fontFamily: fontFamilies.body,
     fontSize: 15,
     fontWeight: '400',
     lineHeight: 20,
@@ -175,13 +176,14 @@ const styles = StyleSheet.create({
   },
   scanTitle: {
     color: '#000000',
-    fontFamily: 'Anek Tamil',
+    fontFamily: fontFamilies.bodyMedium,
     fontSize: 20,
     lineHeight: 26,
   },
   scanDescription: {
     marginTop: 4,
     color: '#000000',
+    fontFamily: fontFamilies.body,
     fontSize: 15,
     lineHeight: 20,
   },
@@ -195,13 +197,14 @@ const styles = StyleSheet.create({
   },
   whiteArrow: {
     color: '#ffffff',
+    fontFamily: fontFamilies.bodySemiBold,
     fontSize: 18,
     fontWeight: '600',
     lineHeight: 20,
   },
   firstAnalysisTitle: {
     color: '#000000',
-    fontFamily: 'Anek Tamil',
+    fontFamily: fontFamilies.heading,
     fontSize: 15,
     lineHeight: 20,
   },
@@ -228,24 +231,28 @@ const styles = StyleSheet.create({
   },
   firstAnalysisDate: {
     color: '#000000',
+    fontFamily: fontFamilies.body,
     fontSize: 15,
     lineHeight: 20,
   },
   firstAnalysisSeverity: {
     marginTop: 10,
     color: '#000000',
+    fontFamily: fontFamilies.body,
     fontSize: 15,
     lineHeight: 20,
   },
   emptyText: {
     flex: 1,
     color: '#000000',
+    fontFamily: fontFamilies.body,
     fontSize: 15,
     lineHeight: 20,
     textAlign: 'center',
   },
   cardArrow: {
     color: '#000000',
+    fontFamily: fontFamilies.body,
     fontSize: 24,
     lineHeight: 30,
   },
@@ -268,6 +275,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#ffffff',
+    fontFamily: fontFamilies.bodySemiBold,
     fontSize: 24,
     fontWeight: '600',
     lineHeight: 30,

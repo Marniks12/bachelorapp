@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAuth } from '../context/AuthContext';
 import { webViewportStyle } from '../styles/responsive';
+import { fontFamilies } from '../styles/typography';
 import { RootStackParamList } from '../types/navigation';
 
 type LoginScreenProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
@@ -147,7 +148,7 @@ const styles = StyleSheet.create({
   title: {
     width: '100%',
     color: '#000000',
-    fontFamily: 'Anek Tamil',
+    fontFamily: fontFamilies.heading,
     fontSize: 28,
     fontWeight: '400',
     lineHeight: 36,
@@ -157,7 +158,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 32,
     color: '#000000',
-    fontFamily: 'Anek Tamil',
+    fontFamily: fontFamilies.body,
     fontSize: 16,
     lineHeight: 22,
     textAlign: 'center',
@@ -172,12 +173,14 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 1,
     color: '#000000',
+    fontFamily: fontFamilies.body,
     fontSize: 16,
   },
   errorText: {
     width: '100%',
     marginBottom: 14,
     color: '#DC2626',
+    fontFamily: fontFamilies.body,
     fontSize: 14,
     lineHeight: 20,
   },
@@ -209,7 +212,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#ffffff',
-    fontFamily: 'Open Sans',
+    fontFamily: fontFamilies.bodySemiBold,
     fontSize: 24,
     fontWeight: '600',
     lineHeight: 30,
@@ -227,10 +230,12 @@ const styles = StyleSheet.create({
   },
   bottomText: {
     color: '#000000',
+    fontFamily: fontFamilies.body,
     fontSize: 15,
   },
   linkText: {
     color: '#F62222',
+    fontFamily: fontFamilies.bodyBold,
     fontSize: 15,
     fontWeight: '700',
   },

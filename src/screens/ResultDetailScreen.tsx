@@ -2,6 +2,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { PhoneCard } from '../components/PhoneCard';
+import { fontFamilies } from '../styles/typography';
 import { RootStackParamList } from '../types/navigation';
 
 type ResultDetailScreenProps = NativeStackScreenProps<RootStackParamList, 'ResultDetail'>;
@@ -103,7 +104,7 @@ const styles = StyleSheet.create({
   title: {
     alignSelf: 'flex-start',
     color: '#000000',
-    fontFamily: 'Anek Tamil',
+    fontFamily: fontFamilies.headingBold,
     fontSize: 32,
     fontWeight: '700',
     lineHeight: 40,
@@ -140,7 +141,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: '#ffffff',
-    fontFamily: 'Open Sans',
+    fontFamily: fontFamilies.bodyBold,
     fontSize: 14,
     fontWeight: '700',
     lineHeight: 18,
@@ -159,6 +160,7 @@ const styles = StyleSheet.create({
   },
   metricLabel: {
     color: '#64748B',
+    fontFamily: fontFamilies.bodyBold,
     fontSize: 12,
     fontWeight: '700',
     lineHeight: 16,
@@ -167,7 +169,7 @@ const styles = StyleSheet.create({
   metricValue: {
     marginTop: 4,
     color: '#0F172A',
-    fontFamily: 'Barlow Condensed',
+    fontFamily: fontFamilies.bodyBold,
     fontSize: 22,
     fontWeight: '700',
     lineHeight: 28,
@@ -175,6 +177,7 @@ const styles = StyleSheet.create({
   warningText: {
     marginTop: 12,
     color: '#B45309',
+    fontFamily: fontFamilies.bodySemiBold,
     fontSize: 13,
     fontWeight: '600',
     lineHeight: 18,
@@ -192,6 +195,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     marginBottom: 8,
     color: '#0F172A',
+    fontFamily: fontFamilies.headingSemiBold,
     fontSize: 15,
     fontWeight: '700',
     lineHeight: 20,
@@ -199,7 +203,7 @@ const styles = StyleSheet.create({
   detailText: {
     width: '100%',
     color: '#000000',
-    fontFamily: 'Barlow Condensed',
+    fontFamily: fontFamilies.body,
     fontSize: 20,
     fontWeight: '300',
     lineHeight: 24,
@@ -207,7 +211,7 @@ const styles = StyleSheet.create({
   },
   disclaimerText: {
     color: '#475569',
-    fontFamily: 'Barlow Condensed',
+    fontFamily: fontFamilies.body,
     fontSize: 17,
     fontWeight: '300',
     lineHeight: 22,
@@ -240,7 +244,7 @@ const styles = StyleSheet.create({
   },
   downloadText: {
     color: '#ffffff',
-    fontFamily: 'Open Sans',
+    fontFamily: fontFamilies.bodySemiBold,
     fontSize: 24,
     fontWeight: '600',
     lineHeight: 30,
