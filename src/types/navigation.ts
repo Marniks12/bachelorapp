@@ -8,6 +8,9 @@ export type RootStackParamList = {
   InfoCarousel: undefined;
   Camera: undefined;
   Loading: undefined;
+  Error: {
+    message: string;
+  };
   Result: {
     analysis: Analysis;
   };

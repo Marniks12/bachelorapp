@@ -19,6 +19,9 @@ type AnalysisResult = {
   disclaimer: string;
 };
 
+const invalidAnalysisMessage =
+  'De foto kon niet betrouwbaar worden geanalyseerd. Neem een nieuwe foto van het audiogram.';
+
 const fallbackAnalysisResult: AnalysisResult = {
   success: false,
   severity: 'Analyse mislukt',
@@ -60,6 +63,18 @@ function toAnalysisResult(result: Record<string, unknown>): AnalysisResult {
         ? result.disclaimer
         : 'Deze analyse is automatisch gegenereerd en vormt geen medische diagnose.',
   };
+}
+
+function isInvalidAnalysisResult(result: AnalysisResult): boolean {
+  const normalizedConfidence = result.confidence.trim().toLowerCase();
+  const normalizedSeverity = result.severity.trim().toLowerCase();
+
+  return (
+    result.success === false ||
+    normalizedConfidence === 'laag' ||
+    normalizedSeverity === 'onvoldoende leesbaar' ||
+    normalizedSeverity === 'invalid audiogram'
+  );
 }
 
 function getN8nWebhookUrl(): string | null {
@@ -183,6 +198,11 @@ analysisRouter.post(
       const imageUrl = await uploadAudiogramToCloudinary(req.file);
       const analysisResult = await requestN8nAnalysis(patientLabel, req.file.originalname, imageUrl);
 
+      if (isInvalidAnalysisResult(analysisResult)) {
+        res.status(422).json({ message: invalidAnalysisMessage, code: 'INVALID_AUDIOGRAM' });
+        return;
+      }
+
       const analysis = await Analysis.create({
         userId: req.user!._id,
         patientLabel,
@@ -201,7 +221,13 @@ analysisRouter.post(
 
 analysisRouter.get('/', requireAuth, async (req, res, next) => {
   try {
-    const analyses = await Analysis.find({ userId: req.user!._id }).sort({ createdAt: -1, _id: -1 });
+    const analyses = await Analysis.find({
+      userId: req.user!._id,
+      success: { $ne: false },
+      confidence: { $not: /^\s*laag\s*$/i },
+      severity: { $not: /^\s*(Onvoldoende leesbaar|Invalid audiogram)\s*$/i },
+    }).sort({ createdAt: -1, _id: -1 });
+
     res.json(analyses);
   } catch (error) {
     next(error);

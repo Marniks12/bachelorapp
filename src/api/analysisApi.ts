@@ -4,6 +4,8 @@ import { getToken } from '../utils/authStorage';
 
 const ANALYSES_URL = `${API_BASE_URL}/api/analyses`;
 const UPLOAD_ANALYSIS_URL = `${API_BASE_URL}/api/analyses/upload`;
+export const INVALID_AUDIOGRAM_MESSAGE =
+  'De foto kon niet betrouwbaar worden geanalyseerd. Neem een nieuwe foto van het audiogram.';
 
 export type Analysis = {
   _id: string;
@@ -48,13 +50,20 @@ export async function getAnalyses(): Promise<Analysis[]> {
     throw new Error(getResponseMessage(responseBody) ?? 'Analyses ophalen mislukt');
   }
 
-  return sortAnalysesByNewest(JSON.parse(responseBody) as Analysis[]);
+  return sortAnalysesByNewest((JSON.parse(responseBody) as Analysis[]).filter(isValidStoredAnalysis));
 }
 
 export type AudiogramUpload = {
   uri: string;
   patientLabel: string;
 };
+
+export class InvalidAudiogramError extends Error {
+  constructor(message = INVALID_AUDIOGRAM_MESSAGE) {
+    super(message);
+    this.name = 'InvalidAudiogramError';
+  }
+}
 
 export async function uploadAudiogramAnalysis(upload: AudiogramUpload): Promise<Analysis> {
   const imageResponse = await fetch(upload.uri);
@@ -79,6 +88,10 @@ export async function uploadAudiogramAnalysis(upload: AudiogramUpload): Promise<
       throw new Error('Sessie verlopen. Log opnieuw in.');
     }
 
+    if (response.status === 422) {
+      throw new InvalidAudiogramError(getInvalidAudiogramMessage(responseBody));
+    }
+
     throw new Error(getResponseMessage(responseBody) ?? 'Upload mislukt. Probeer opnieuw.');
   }
 
@@ -98,7 +111,13 @@ export async function uploadAudiogramAnalysis(upload: AudiogramUpload): Promise<
     throw new Error('Ongeldig analyseresultaat ontvangen');
   }
 
-  return analysis as Analysis;
+  const completeAnalysis = analysis as Analysis;
+
+  if (!isValidStoredAnalysis(completeAnalysis)) {
+    throw new InvalidAudiogramError();
+  }
+
+  return completeAnalysis;
 }
 
 export async function checkBackendHealth(): Promise<boolean> {
@@ -141,6 +160,22 @@ function getResponseMessage(responseBody: string): string | null {
   }
 }
 
+function getInvalidAudiogramMessage(responseBody: string): string {
+  if (!responseBody.trim()) {
+    return INVALID_AUDIOGRAM_MESSAGE;
+  }
+
+  try {
+    const payload = JSON.parse(responseBody) as { message?: unknown };
+
+    return typeof payload.message === 'string' && payload.message.trim()
+      ? payload.message
+      : INVALID_AUDIOGRAM_MESSAGE;
+  } catch {
+    return responseBody.trim() || INVALID_AUDIOGRAM_MESSAGE;
+  }
+}
+
 function normalizeApiErrorMessage(message: string): string {
   const normalizedMessage = message.toLowerCase();
 
@@ -157,6 +192,18 @@ function normalizeApiErrorMessage(message: string): string {
   }
 
   return message;
+}
+
+function isValidStoredAnalysis(analysis: Analysis): boolean {
+  const normalizedConfidence = analysis.confidence.trim().toLowerCase();
+  const normalizedSeverity = analysis.severity.trim().toLowerCase();
+
+  return (
+    analysis.success !== false &&
+    normalizedConfidence !== 'laag' &&
+    normalizedSeverity !== 'onvoldoende leesbaar' &&
+    normalizedSeverity !== 'invalid audiogram'
+  );
 }
 
 function sortAnalysesByNewest(analyses: Analysis[]): Analysis[] {

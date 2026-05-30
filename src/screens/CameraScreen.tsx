@@ -3,7 +3,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as ImagePicker from 'expo-image-picker';
 import { ActivityIndicator, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { uploadAudiogramAnalysis } from '../api/analysisApi';
+import { InvalidAudiogramError, INVALID_AUDIOGRAM_MESSAGE, uploadAudiogramAnalysis } from '../api/analysisApi';
 import { PhoneCard } from '../components/PhoneCard';
 import { useAuth } from '../context/AuthContext';
 import { RootStackParamList } from '../types/navigation';
@@ -113,6 +113,12 @@ export function CameraScreen({ navigation }: CameraScreenProps) {
       navigation.navigate('Result', { analysis });
     } catch (error) {
       const message = error instanceof Error ? error.message : null;
+
+      if (error instanceof InvalidAudiogramError) {
+        navigation.navigate('Error', { message: message ?? INVALID_AUDIOGRAM_MESSAGE });
+        return;
+      }
+
       setErrorMessage(getUploadErrorMessage(message));
 
       if (message?.includes('Sessie verlopen') || message?.includes('Authenticatie vereist')) {

@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { CameraScreen } from '../screens/CameraScreen';
 import { DashboardNewUserScreen } from '../screens/DashboardNewUserScreen';
 import { DashboardScreen } from '../screens/DashboardScreen';
+import { ErrorScreen } from '../screens/ErrorScreen';
 import { HomeScreen } from '../screens/HomeScreen';
 import { InfoCarouselScreen } from '../screens/InfoCarouselScreen';
 import { LoadingScreen } from '../screens/LoadingScreen';
@@ -44,6 +45,7 @@ export function AppNavigator() {
           <Stack.Screen name="InfoCarousel" component={InfoCarouselScreen} />
           <Stack.Screen name="Camera" component={CameraScreen} />
           <Stack.Screen name="Loading" component={LoadingScreen} />
+          <Stack.Screen name="Error" component={ErrorScreen} />
           <Stack.Screen name="Result" component={ResultScreen} />
           <Stack.Screen name="AnalysisDetails" component={ResultDetailScreen} />
           <Stack.Screen name="ResultDetail" component={ResultDetailScreen} />
